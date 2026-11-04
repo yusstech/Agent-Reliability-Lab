@@ -38,7 +38,7 @@ describe('HTTP foundation', () => {
   it('API-01 /health reports database and schema version', async () => {
     const res = await app.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: 'ok', database: 'ok', schema_version: '0001_foundation' });
+    expect(res.json()).toEqual({ status: 'ok', database: 'ok', schema_version: '0002_provider_services' });
   });
 
   it('API-02 /health returns 503 DEPENDENCY_UNAVAILABLE when the database is unreachable', async () => {
