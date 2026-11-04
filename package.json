@@ -1,0 +1,31 @@
+{
+  "name": "agent-reliability-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Investigation 001: deterministic vs agent-directed vs hybrid execution of a delivery-address change.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose down -v",
+    "migrate": "node --env-file-if-exists=.env scripts/migrate.ts",
+    "seed": "node --env-file-if-exists=.env scripts/seed.ts",
+    "db:reset": "node --env-file-if-exists=.env scripts/reset.ts",
+    "start": "node --env-file-if-exists=.env src/server.ts",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run"
+  },
+  "dependencies": {
+    "fastify": "5.12.8",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

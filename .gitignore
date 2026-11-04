@@ -1,0 +1,6 @@
+node_modules/
+.env
+._*
+.DS_Store
+results/*/
+!results/.gitkeep
