@@ -1,8 +1,8 @@
 # Phase 01: Project Foundation & Contracts
 
-- **Status:** Tested. Every acceptance criterion passed from a clean database. The gate is signed off once the commit SHA is recorded below (checklist item 6).
-- **Dates:** 2026-11-02 → 2026-11-02
-- **Commit at gate:** not yet committed
+- **Status:** **Passed** (2026-11-04)
+- **Dates:** 2026-11-02 → 2026-11-04
+- **Commit at gate:** `c8bae58` on [yusstech/Agent-Reliability-Lab](https://github.com/yusstech/Agent-Reliability-Lab)
 
 ## 1. Goal / research value
 Give every later variant the same trustworthy ground: a domain model, database constraints that enforce the non-negotiable rules regardless of who writes, a state model that refuses unverified completion, and reproducible fixtures. Without this, any later comparison between A, B and C would also be measuring differences in the scaffolding.
@@ -75,6 +75,8 @@ npm run typecheck # exit 0, no output
 npm test          # Test Files 8 passed (8) · Tests 50 passed (50)
 ```
 
+**Clean-checkout verification (2026-11-04, gate checklist item 1):** a fresh `git clone` of `c8bae58` into `/tmp` (APFS, not the exFAT development volume), then `cp .env.example .env`, `npm ci`, `npm run typecheck` (exit 0) and `npm test` → 8 files, 50 tests passed. That run used the already-running local Postgres container, not its own `db:up`.
+
 **Test inventory → acceptance criteria:**
 | Done-when criterion | Tests | Result |
 | --- | --- | --- |
@@ -114,4 +116,4 @@ npm test          # Test Files 8 passed (8) · Tests 50 passed (50)
 - On exFAT volumes npm can't create `node_modules/.bin` symlinks, so `.npmrc` sets `bin-links=false` and scripts call tools by path.
 
 ## 8. Outcome / next decision
-All Phase 01 done-when criteria passed. The gate is pending only on recording the commit SHA. **Next:** Phase 02 decides how the order and carrier providers become independent services, and how fault modes are injected deterministically, with an ADR on the timeout-after-write simulation. Open items carried forward: the compensation state (§3 above) and whether `message` is part of the idempotency fingerprint (ADR-0003).
+All Phase 01 done-when criteria passed, and the gate is **signed off as Passed** at `c8bae58`. During the phase, the study design was revised to spec v0.3 ([ADR-0006](../DECISIONS/ADR-0006-enforcement-ladder-and-preregistration.md), [ADR-0007](../DECISIONS/ADR-0007-models-harness-and-budget.md)). **Next:** Phase 02 decides how the order and carrier providers become independent services, and how fault modes are injected deterministically, with an ADR on the timeout-after-write simulation. Open items carried forward: the compensation state (§3 above) and whether `message` is part of the idempotency fingerprint (ADR-0003).

@@ -1,7 +1,7 @@
 # Implementation Roadmap
 
 **Agent Reliability Lab · Investigation 001 · Roadmap v0.2**  
-**Status:** Phase 01 tested (gate pending commit SHA). No milestone is marked complete without a working artifact and logged evidence.
+**Status:** Phase 01 passed (`c8bae58`); Phase 02 next. No milestone is marked complete without a working artifact and logged evidence.
 
 ## Delivery principles
 
@@ -114,7 +114,7 @@ Do not build authentication infrastructure for production, real carrier integrat
 
 | Phase | Status | Evidence link | Next action |
 | --- | --- | --- | --- |
-| 01 Foundation | Tested, gate pending commit SHA | [PHASE-01](PHASES/PHASE-01-FOUNDATION.md) | Commit; record SHA; sign off |
+| 01 Foundation | **Passed** (`c8bae58`) | [PHASE-01](PHASES/PHASE-01-FOUNDATION.md) | — |
 | 02 Mock services | Not started | — | Provider separation + fault-injection ADR |
 | 03 Deterministic | Not started | — | Follow phase 02 gate |
 | 04 Evaluation harness | Not started | — | Follow phase 03 gate |
