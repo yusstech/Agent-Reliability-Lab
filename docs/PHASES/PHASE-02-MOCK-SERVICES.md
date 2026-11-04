@@ -1,8 +1,8 @@
 # Phase 02: Independent Mock Providers & Fault Injection
 
-- **Status:** Tested. All done-when criteria pass. The gate is signed off when this branch is merged and the commit is recorded below.
+- **Status:** **Passed** (2026-11-04)
 - **Dates:** 2026-11-04 → 2026-11-04
-- **Commit at gate:** not yet merged (branch `phase-02-mock-services`)
+- **Commit at gate:** `1161eaa` (merge of [PR #1](https://github.com/yusstech/Agent-Reliability-Lab/pull/1)). The merged `main` was re-verified from an empty database: 12 files, 78 tests passed.
 
 ## 1. Goal / research value
 Every later claim about recovery depends on one capability: injecting a provider failure on demand, identically every time, and then knowing *for certain* what the provider did. In particular, the study must be able to produce two situations that look **identical to the caller** but differ in reality: a timeout before the write and a timeout after it. If it can't, "unknown outcome" can't be measured.
@@ -117,6 +117,6 @@ npm run traces      # wrote 12 scenario traces to docs/PHASES/evidence/
 - **Providers run in-process for tests and traces**, and as separate processes only for manual runs. There is no automated multi-process test.
 
 ## 8. Outcome / next decision
-All done-when criteria pass. **Next, Phase 03:** the deterministic baseline (variant A). That covers the confirmation challenge, the operation ledger and worker with lease and recovery, and adapters built on `ProviderClient`. A verifier must read more than once, or use the status endpoint, because of P02-07. Reconciliation must branch on idempotency mode, because of P02-04 and P02-05. The rule-based intent layer and worker-level duplicate delivery are also needed.
+All done-when criteria pass, and the gate is **signed off as Passed** at `1161eaa`. **Next, Phase 03:** the deterministic baseline (variant A). That covers the confirmation challenge, the operation ledger and worker with lease and recovery, and adapters built on `ProviderClient`. A verifier must read more than once, or use the status endpoint, because of P02-07. Reconciliation must branch on idempotency mode, because of P02-04 and P02-05. The rule-based intent layer and worker-level duplicate delivery are also needed.
 
 **What changed in our thinking:** `expected_version` turned out to be the cheapest strong guard against duplicates, working even where providers lack idempotency. Phase 03 should always send it, and the B-ladder tool design should decide at which rung the tools send it automatically.

@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phase 01 (foundation) has passed its gate** ([report](docs/PHASES/PHASE-01-FOUNDATION.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 78 automated tests pass from a clean database. Phase 02 (mock providers and fault injection) is tested. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phases 01 (foundation) and 02 (mock providers and fault injection) have passed their gates** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 78 automated tests pass from a clean database. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 

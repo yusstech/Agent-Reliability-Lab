@@ -1,7 +1,7 @@
 # Implementation Roadmap
 
 **Agent Reliability Lab · Investigation 001 · Roadmap v0.2**  
-**Status:** Phase 01 passed (`c8bae58`); Phase 02 tested (gate pending merge). No milestone is marked complete without a working artifact and logged evidence.
+**Status:** Phase 01 passed (`c8bae58`); Phase 02 passed (`1161eaa`); Phase 03 next. No milestone is marked complete without a working artifact and logged evidence.
 
 ## Delivery principles
 
@@ -115,8 +115,8 @@ Do not build authentication infrastructure for production, real carrier integrat
 | Phase | Status | Evidence link | Next action |
 | --- | --- | --- | --- |
 | 01 Foundation | **Passed** (`c8bae58`) | [PHASE-01](PHASES/PHASE-01-FOUNDATION.md) | — |
-| 02 Mock services | Tested, gate pending merge | [PHASE-02](PHASES/PHASE-02-MOCK-SERVICES.md) | Merge; record commit; sign off |
-| 03 Deterministic | Not started | — | Follow phase 02 gate |
+| 02 Mock services | **Passed** (`1161eaa`) | [PHASE-02](PHASES/PHASE-02-MOCK-SERVICES.md) | — |
+| 03 Deterministic | Not started | — | Confirmation, ledger, worker with lease and recovery, verifier, reconciliation |
 | 04 Evaluation harness | Not started | — | Follow phase 03 gate |
 | 05 Model variants | Not started | — | Follow phase 04 gate |
 | 06 Publication | Not started | — | Follow phase 05 gate |
