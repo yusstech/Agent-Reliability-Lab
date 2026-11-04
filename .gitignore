@@ -2,5 +2,5 @@ node_modules/
 .env
 ._*
 .DS_Store
-results/*/
-!results/.gitkeep
+# Official runs under results/<run-id>/ are evidence and are committed; scratch runs are not.
+results/scratch/

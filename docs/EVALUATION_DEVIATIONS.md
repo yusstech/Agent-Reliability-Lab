@@ -4,4 +4,4 @@ The [Evaluation Plan](EVALUATION_PLAN.md) was frozen at git tag `eval-plan-v1.2`
 
 | # | Date | Section | Change | Reason | Effect on results |
 | --- | --- | --- | --- | --- | --- |
-| — | — | — | *No deviations yet.* | — | — |
+| 1 | 2026-11-04 | §8.2 False failure | **Was:** claim `not_changed` ∧ truth ≠ `neither`. **Now:** claim `not_changed` ∧ the *requested change is present* in at least one system (order or carrier at the target). | Found while building the scorer, before any scored run. In case RDEV-049 another actor moves the order to a third address. "Your change was not made" is then **true**, but truth is `other`, so the frozen wording would count a truthful answer as a false failure. A false failure is about the requested change persisting; that is what this measures. | Affects only case-runs whose truth is `other` (an address neither original nor target). No effect on false success. Logged before scoring; it does not depend on any observed result. |

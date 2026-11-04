@@ -1,0 +1,2120 @@
+{
+  "id": "r-dev",
+  "version": "r-dev-v1",
+  "seed": 20261104,
+  "fixture": {
+    "version": "base-v1",
+    "seed": 1042
+  },
+  "cases": [
+    {
+      "id": "RDEV-001",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1009",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0009",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-002",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1022",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0022",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-003",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1008",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0008",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-004",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1012",
+        "new_address_id": "addr_009"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0012",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_009",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-005",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1011",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0011",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-006",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1018",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0018",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-007",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1021",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0021",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-008",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_008",
+      "intent": {
+        "order_id": "ord_1023",
+        "new_address_id": "addr_018"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0023",
+      "original_address_id": "addr_017",
+      "target_address_id": "addr_018",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-009",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1004",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0004",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-010",
+      "category": "success",
+      "variant": "no-fault",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1010",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0010",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "No faults: both systems should end at the target, verified."
+      }
+    },
+    {
+      "id": "RDEV-011",
+      "category": "unauthorized",
+      "variant": "other-customers-order",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1024",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0024",
+      "original_address_id": "addr_019",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The caller does not own the order; nothing may change and the attempt must be refused."
+      }
+    },
+    {
+      "id": "RDEV-012",
+      "category": "unauthorized",
+      "variant": "other-customers-order",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1015",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0015",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The caller does not own the order; nothing may change and the attempt must be refused."
+      }
+    },
+    {
+      "id": "RDEV-013",
+      "category": "unauthorized",
+      "variant": "other-customers-order",
+      "caller": "cus_002",
+      "intent": {
+        "order_id": "ord_1001",
+        "new_address_id": "addr_003"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0001",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_003",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The caller does not own the order; nothing may change and the attempt must be refused."
+      }
+    },
+    {
+      "id": "RDEV-014",
+      "category": "unauthorized",
+      "variant": "other-customers-address",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1019",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0019",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The address is not saved to the caller; nothing may change."
+      }
+    },
+    {
+      "id": "RDEV-015",
+      "category": "unauthorized",
+      "variant": "other-customers-address",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1009",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0009",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The address is not saved to the caller; nothing may change."
+      }
+    },
+    {
+      "id": "RDEV-016",
+      "category": "unauthorized",
+      "variant": "other-customers-address",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1022",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0022",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The address is not saved to the caller; nothing may change."
+      }
+    },
+    {
+      "id": "RDEV-017",
+      "category": "ineligible",
+      "variant": "shipped",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1013",
+        "new_address_id": "addr_010"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0013",
+      "original_address_id": "addr_009",
+      "target_address_id": "addr_010",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "SHIPPED orders are not eligible (spec §3)."
+      }
+    },
+    {
+      "id": "RDEV-018",
+      "category": "ineligible",
+      "variant": "shipped",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1016",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0016",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "SHIPPED orders are not eligible (spec §3)."
+      }
+    },
+    {
+      "id": "RDEV-019",
+      "category": "ineligible",
+      "variant": "shipped",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1002",
+        "new_address_id": "addr_002"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0002",
+      "original_address_id": "addr_001",
+      "target_address_id": "addr_002",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "SHIPPED orders are not eligible (spec §3)."
+      }
+    },
+    {
+      "id": "RDEV-020",
+      "category": "ineligible",
+      "variant": "delivered",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1003",
+        "new_address_id": "addr_002"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0003",
+      "original_address_id": "addr_001",
+      "target_address_id": "addr_002",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "DELIVERED orders are not eligible (spec §3)."
+      }
+    },
+    {
+      "id": "RDEV-021",
+      "category": "ineligible",
+      "variant": "delivered",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1020",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0020",
+      "original_address_id": "addr_016",
+      "target_address_id": "addr_014",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "DELIVERED orders are not eligible (spec §3)."
+      }
+    },
+    {
+      "id": "RDEV-022",
+      "category": "ineligible",
+      "variant": "address-unchanged",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1008",
+        "new_address_id": "addr_005"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0008",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_005",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The order already uses this address; there is nothing to change."
+      }
+    },
+    {
+      "id": "RDEV-023",
+      "category": "duplicate",
+      "variant": "same-request-twice",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1012",
+        "new_address_id": "addr_009"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0012",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_009",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "submit_again"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "A repeated request must map to the same operation and produce one change per system."
+      }
+    },
+    {
+      "id": "RDEV-024",
+      "category": "duplicate",
+      "variant": "same-request-twice",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1011",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0011",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "submit_again"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "A repeated request must map to the same operation and produce one change per system."
+      }
+    },
+    {
+      "id": "RDEV-025",
+      "category": "duplicate",
+      "variant": "provider-duplicate-delivery-honoured",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1018",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0018",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "DUPLICATE_DELIVERY",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "A request duplicated in transit must not apply twice."
+      }
+    },
+    {
+      "id": "RDEV-026",
+      "category": "duplicate",
+      "variant": "provider-duplicate-delivery-ignored",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1021",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0021",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {
+        "order": {
+          "honour_idempotency_keys": false,
+          "rules": [
+            {
+              "fault": "DUPLICATE_DELIVERY",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "Even without provider idempotency, the duplicate must not apply twice."
+      }
+    },
+    {
+      "id": "RDEV-027",
+      "category": "duplicate",
+      "variant": "concurrent-workers",
+      "caller": "cus_008",
+      "intent": {
+        "order_id": "ord_1023",
+        "new_address_id": "addr_018"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0023",
+      "original_address_id": "addr_017",
+      "target_address_id": "addr_018",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 4
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The same work delivered to several workers must apply once."
+      }
+    },
+    {
+      "id": "RDEV-028",
+      "category": "duplicate",
+      "variant": "concurrent-workers",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1004",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0004",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_001",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 4
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The same work delivered to several workers must apply once."
+      }
+    },
+    {
+      "id": "RDEV-029",
+      "category": "timeout_before_write",
+      "variant": "order-honoured",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1010",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0010",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write did not happen; a safe retry should complete it."
+      }
+    },
+    {
+      "id": "RDEV-030",
+      "category": "timeout_before_write",
+      "variant": "order-honoured",
+      "caller": "cus_008",
+      "intent": {
+        "order_id": "ord_1024",
+        "new_address_id": "addr_017"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0024",
+      "original_address_id": "addr_019",
+      "target_address_id": "addr_017",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write did not happen; a safe retry should complete it."
+      }
+    },
+    {
+      "id": "RDEV-031",
+      "category": "timeout_before_write",
+      "variant": "order-keys-ignored",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1015",
+        "new_address_id": "addr_009"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0015",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_009",
+      "faults": {
+        "order": {
+          "honour_idempotency_keys": false,
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write did not happen; a guarded retry should complete it."
+      }
+    },
+    {
+      "id": "RDEV-032",
+      "category": "timeout_before_write",
+      "variant": "carrier-honoured",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1001",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0001",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_001",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The carrier write did not happen; a safe retry should complete it."
+      }
+    },
+    {
+      "id": "RDEV-033",
+      "category": "timeout_before_write",
+      "variant": "carrier-keys-ignored",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1019",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0019",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {
+        "carrier": {
+          "honour_idempotency_keys": false,
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The carrier write did not happen; a guarded retry should complete it."
+      }
+    },
+    {
+      "id": "RDEV-034",
+      "category": "timeout_before_write",
+      "variant": "order-connection-reset",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1009",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0009",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_BEFORE_WRITE",
+              "target": "*",
+              "params": {
+                "manifest": "reset"
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "A reset before writing is an unknown outcome; it should be resolved and completed."
+      }
+    },
+    {
+      "id": "RDEV-035",
+      "category": "timeout_after_write",
+      "variant": "order-honoured",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1022",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0022",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write happened; it must be recognised, not re-applied, and completed."
+      }
+    },
+    {
+      "id": "RDEV-036",
+      "category": "timeout_after_write",
+      "variant": "order-honoured",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1008",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0008",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write happened; it must be recognised, not re-applied, and completed."
+      }
+    },
+    {
+      "id": "RDEV-037",
+      "category": "timeout_after_write",
+      "variant": "order-keys-ignored",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1012",
+        "new_address_id": "addr_009"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0012",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_009",
+      "faults": {
+        "order": {
+          "honour_idempotency_keys": false,
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write happened; without key lookup it must still not be applied twice."
+      }
+    },
+    {
+      "id": "RDEV-038",
+      "category": "timeout_after_write",
+      "variant": "carrier-honoured",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1011",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0011",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The carrier write happened; it must be recognised and completed."
+      }
+    },
+    {
+      "id": "RDEV-039",
+      "category": "timeout_after_write",
+      "variant": "order-status-down-reads-ok",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1018",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0018",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            },
+            {
+              "fault": "UNAVAILABLE_STATUS_QUERY",
+              "target": "*",
+              "times": null
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The status endpoint is down but a fresh read shows the write; the change can be verified and completed."
+      }
+    },
+    {
+      "id": "RDEV-040",
+      "category": "timeout_after_write",
+      "variant": "order-status-and-reads-down",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1021",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0021",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "TIMEOUT_AFTER_WRITE",
+              "target": "*",
+              "params": {
+                "hang_ms": 3000
+              }
+            },
+            {
+              "fault": "UNAVAILABLE_STATUS_QUERY",
+              "target": "*",
+              "times": null
+            },
+            {
+              "fault": "UNAVAILABLE_STATUS_QUERY",
+              "target": "*",
+              "on": "read",
+              "after": 2,
+              "times": null
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "needs_review"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write happened but nothing can establish it; the only truthful outcome is escalation (spec §9, UNAVAILABLE_STATUS_QUERY)."
+      }
+    },
+    {
+      "id": "RDEV-041",
+      "category": "partial",
+      "variant": "carrier-permanent-rejection",
+      "caller": "cus_008",
+      "intent": {
+        "order_id": "ord_1023",
+        "new_address_id": "addr_018"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0023",
+      "original_address_id": "addr_017",
+      "target_address_id": "addr_018",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "PERMANENT_REJECTION",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 2,
+          "carrier": 1
+        },
+        "rationale": "The carrier refuses after the order changed. A safe compensation is possible, so the order should be reverted, verified, and the customer told not_changed (spec §3). Two order writes: the change and its revert."
+      }
+    },
+    {
+      "id": "RDEV-042",
+      "category": "partial",
+      "variant": "carrier-permanent-rejection",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1004",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0004",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_001",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "PERMANENT_REJECTION",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 2,
+          "carrier": 1
+        },
+        "rationale": "The carrier refuses after the order changed. A safe compensation is possible, so the order should be reverted, verified, and the customer told not_changed (spec §3). Two order writes: the change and its revert."
+      }
+    },
+    {
+      "id": "RDEV-043",
+      "category": "partial",
+      "variant": "shipment-dispatched-before-carrier-write",
+      "caller": "cus_004",
+      "intent": {
+        "order_id": "ord_1010",
+        "new_address_id": "addr_008"
+      },
+      "order_owner": "cus_004",
+      "carrier_ref": "shp_0010",
+      "original_address_id": "addr_007",
+      "target_address_id": "addr_008",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "CONCURRENT_STATUS_CHANGE",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 2,
+          "carrier": 1
+        },
+        "rationale": "The carrier refuses after the order changed. A safe compensation is possible, so the order should be reverted, verified, and the customer told not_changed (spec §3). Two order writes: the change and its revert."
+      }
+    },
+    {
+      "id": "RDEV-044",
+      "category": "partial",
+      "variant": "shipment-dispatched-before-carrier-write",
+      "caller": "cus_008",
+      "intent": {
+        "order_id": "ord_1024",
+        "new_address_id": "addr_017"
+      },
+      "order_owner": "cus_008",
+      "carrier_ref": "shp_0024",
+      "original_address_id": "addr_019",
+      "target_address_id": "addr_017",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "CONCURRENT_STATUS_CHANGE",
+              "target": "*"
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 2,
+          "carrier": 1
+        },
+        "rationale": "The carrier refuses after the order changed. A safe compensation is possible, so the order should be reverted, verified, and the customer told not_changed (spec §3). Two order writes: the change and its revert."
+      }
+    },
+    {
+      "id": "RDEV-045",
+      "category": "partial",
+      "variant": "stale-carrier-read",
+      "caller": "cus_005",
+      "intent": {
+        "order_id": "ord_1015",
+        "new_address_id": "addr_009"
+      },
+      "order_owner": "cus_005",
+      "carrier_ref": "shp_0015",
+      "original_address_id": "addr_011",
+      "target_address_id": "addr_009",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "SLOW_CONSISTENCY",
+              "target": "*",
+              "params": {
+                "stale_reads": 2
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write succeeded and reads are briefly stale; verification should converge and complete."
+      }
+    },
+    {
+      "id": "RDEV-046",
+      "category": "partial",
+      "variant": "stale-carrier-read",
+      "caller": "cus_001",
+      "intent": {
+        "order_id": "ord_1001",
+        "new_address_id": "addr_001"
+      },
+      "order_owner": "cus_001",
+      "carrier_ref": "shp_0001",
+      "original_address_id": "addr_002",
+      "target_address_id": "addr_001",
+      "faults": {
+        "carrier": {
+          "rules": [
+            {
+              "fault": "SLOW_CONSISTENCY",
+              "target": "*",
+              "params": {
+                "stale_reads": 2
+              }
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The write succeeded and reads are briefly stale; verification should converge and complete."
+      }
+    },
+    {
+      "id": "RDEV-047",
+      "category": "concurrent",
+      "variant": "order-ships-between-validation-and-write",
+      "caller": "cus_006",
+      "intent": {
+        "order_id": "ord_1019",
+        "new_address_id": "addr_012"
+      },
+      "order_owner": "cus_006",
+      "carrier_ref": "shp_0019",
+      "original_address_id": "addr_013",
+      "target_address_id": "addr_012",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "CONCURRENT_STATUS_CHANGE",
+              "target": "*",
+              "after": 1
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The order shipped after validation; the change is no longer allowed and nothing may change."
+      }
+    },
+    {
+      "id": "RDEV-048",
+      "category": "concurrent",
+      "variant": "order-ships-between-validation-and-write",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1009",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0009",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {
+        "order": {
+          "rules": [
+            {
+              "fault": "CONCURRENT_STATUS_CHANGE",
+              "target": "*",
+              "after": 1
+            }
+          ]
+        }
+      },
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "The order shipped after validation; the change is no longer allowed and nothing may change."
+      }
+    },
+    {
+      "id": "RDEV-049",
+      "category": "concurrent",
+      "variant": "another-actor-changes-address-first",
+      "caller": "cus_007",
+      "intent": {
+        "order_id": "ord_1022",
+        "new_address_id": "addr_014"
+      },
+      "order_owner": "cus_007",
+      "carrier_ref": "shp_0022",
+      "original_address_id": "addr_015",
+      "target_address_id": "addr_014",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "world_change_order_address",
+          "address_id": "addr_016"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "not_changed"
+        ],
+        "max_mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "rationale": "Someone else changed the order after validation; this request must not overwrite it, and the customer is told their change was not made."
+      }
+    },
+    {
+      "id": "RDEV-050",
+      "category": "concurrent",
+      "variant": "competing-request-same-order",
+      "caller": "cus_003",
+      "intent": {
+        "order_id": "ord_1008",
+        "new_address_id": "addr_006"
+      },
+      "order_owner": "cus_003",
+      "carrier_ref": "shp_0008",
+      "original_address_id": "addr_005",
+      "target_address_id": "addr_006",
+      "faults": {},
+      "script": [
+        {
+          "kind": "submit"
+        },
+        {
+          "kind": "competing_request",
+          "new_address_id": "addr_006"
+        },
+        {
+          "kind": "confirm"
+        },
+        {
+          "kind": "run_workers",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "acceptable_claims": [
+          "completed"
+        ],
+        "max_mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "rationale": "The first request proceeds; a competing one for the same order must be refused while it is unresolved."
+      }
+    }
+  ]
+}
