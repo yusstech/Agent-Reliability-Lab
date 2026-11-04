@@ -21,6 +21,22 @@ flowchart LR
   end
 ```
 
+## Implemented (Phase 02): independent providers
+
+```mermaid
+flowchart LR
+  Caller[Caller: future adapters / tools] -->|ProviderClient: ok / rejected / UNKNOWN| OS[Order service :3101]
+  Caller --> CS[Carrier service :3102]
+  OS -->|role arl_order_svc| O[(order_svc: orders + append-only mutation log)]
+  CS -->|role arl_carrier_svc| C[(carrier_svc: shipments + append-only mutation log)]
+  OS -.- FO[Fault engine: count-based rules]
+  CS -.- FC[Fault engine: count-based rules]
+  Harness[Scenario harness, local only] -->|PUT /_dev/scenario| OS
+  Harness --> CS
+```
+
+Each provider's database role can reach only its own schema, so a cross-provider write fails with `permission denied` (test PV-01). Faults and idempotency modes are set per scenario ([ADR-0008](DECISIONS/ADR-0008-provider-simulation-and-fault-model.md)).
+
 ## Trust boundaries
 
 | Boundary | Rule | Enforced by |
@@ -30,6 +46,10 @@ flowchart LR
 | Ledger ↔ providers | No cross-schema FKs; cross-system consistency is verified, not assumed | Schema design (ADR-0002), test DB-09 |
 | Status changes | `COMPLETED` only from `VERIFYING` with dual-system evidence | `assertTransition` (domain), Phase 03 must route all writes through it |
 | Evidence | Operation events are append-only | DB trigger |
+| Provider ↔ provider | No provider can read or write another's schema | DB roles (ADR-0008), test PV-01 |
+| Caller → order service | The acting customer sees only their own orders (404 otherwise). The header is trusted, so its value must come from the server session | Order service, PB-01 |
+| Provider truth | What was really applied is recorded in each provider's append-only mutation log, committed with the write | Grants (SELECT/INSERT only), PV-03 |
+| Caller's view of outcomes | Timeout, reset and 5xx (except 501) are UNKNOWN, never failure | `ProviderClient` |
 
 ## Proposed (not implemented)
-The worker, the provider adapters, independent provider services with fault injection, the verifier, reconciliation, and the model variants. See the [roadmap](IMPLEMENTATION_ROADMAP.md).
+The worker, the provider adapters, the verifier, reconciliation, and the model variants. See the [roadmap](IMPLEMENTATION_ROADMAP.md).

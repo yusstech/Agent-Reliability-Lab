@@ -6,6 +6,8 @@ import { hashToken } from '../security/token-hash.ts';
 const TABLES = [
   'ledger.operation_events',
   'ledger.operations',
+  'carrier_svc.address_mutations',
+  'order_svc.address_mutations',
   'carrier_svc.shipments',
   'order_svc.orders',
   'identity.mock_sessions',
@@ -30,7 +32,8 @@ export async function seed(pool: pg.Pool, fixture: Fixture): Promise<void> {
     await client.query('BEGIN');
     // TRUNCATE is used so the append-only row trigger on operation_events still forbids
     // DELETE/UPDATE in normal operation while allowing a full fixture reset.
-    await client.query(`TRUNCATE ${TABLES.join(', ')}`);
+    // RESTART IDENTITY makes provider mutation ids deterministic after every reset.
+    await client.query(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY`);
     await insertMany(client, 'identity.customers', ['id'], fixture.customers as unknown as Record<string, unknown>[]);
     await insertMany(client, 'identity.saved_addresses', ['id', 'customer_id', 'normalized_address'], fixture.saved_addresses as unknown as Record<string, unknown>[]);
     await insertMany(

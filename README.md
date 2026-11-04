@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phase 01 (foundation) has passed its gate** ([report](docs/PHASES/PHASE-01-FOUNDATION.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 50 automated tests pass from a clean database. There is **no** worker, mock provider service, fault injection, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phase 01 (foundation) has passed its gate** ([report](docs/PHASES/PHASE-01-FOUNDATION.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 78 automated tests pass from a clean database. Phase 02 (mock providers and fault injection) is tested. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 
@@ -31,7 +31,7 @@ The primary metric is **claim accuracy**: whether what the customer was told mat
 | Strict request validation with a stable error envelope | Tested | VA-01…06, API-07…10 |
 | `GET /health` | Tested | API-01…02 |
 | Address-change execution, confirmation, worker, verifier | Not implemented (Phase 03); the endpoint returns `501` | API-09 |
-| Independent mock providers + fault injection | Not implemented (Phase 02) | — |
+| Independent order and carrier services: separate DB roles, append-only mutation logs, idempotency on or off, all 8 spec fault modes | Tested | PV-01…05, PB-01…07, FD-01…03, [12 golden fault traces](docs/PHASES/evidence/phase-02-fault-traces.md) |
 | 50-case evaluation, results | Not implemented (Phase 04) | — |
 | Agent-directed / hybrid variants | Not implemented (Phase 05) | — |
 
@@ -48,8 +48,11 @@ npm run db:up            # Postgres 16 on 127.0.0.1:54329
 npm run migrate          # → migrations applied: 0001_foundation
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
-npm test                 # → Tests 50 passed (50); resets its own arl_test database
+npm test                 # → Tests 78 passed (78); resets its own arl_test database
+npm run traces           # regenerates the Phase 02 fault-trace evidence
 npm start                # API on http://127.0.0.1:3000
+npm run start:order      # mock order service on :3101 (separate process)
+npm run start:carrier    # mock carrier service on :3102
 ```
 
 Example responses (captured 2026-11-02; request IDs vary):
@@ -76,7 +79,7 @@ Fixture session tokens are `mock_session_cus_001` … `mock_session_cus_008`. Th
 - [docs/RELATED_WORK.md](docs/RELATED_WORK.md): prior work and positioning
 - [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md): phases, gates, progress
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): implemented components and trust boundaries
-- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0007
+- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0008
 - [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md): evidence and writing rules; [docs/TEMPLATES/](docs/TEMPLATES/)
 - `migrations/`, `src/`, `fixtures/`, `scripts/`, `tests/`: implementation
 

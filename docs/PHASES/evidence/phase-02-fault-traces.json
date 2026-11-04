@@ -1,0 +1,2007 @@
+{
+  "fixture": {
+    "version": "base-v1",
+    "seed": 1042
+  },
+  "client_timeout_ms": 100,
+  "traces": [
+    {
+      "scenario_id": "P02-01",
+      "fault": "NORMAL",
+      "title": "No faults",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-01_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-01_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-02",
+      "fault": "TIMEOUT_BEFORE_WRITE",
+      "title": "Order times out before writing (keys honoured)",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "timeout"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /orders/ord_1001/address-changes/P02-02_probe1",
+          "outcome": {
+            "kind": "rejected",
+            "status": 404,
+            "code": "MUTATION_NOT_FOUND"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-02_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-02_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "TIMEOUT_BEFORE_WRITE",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-03",
+      "fault": "TIMEOUT_AFTER_WRITE",
+      "title": "Order writes, then times out (keys honoured)",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "timeout"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /orders/ord_1001/address-changes/P02-03_probe1",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "applied": true,
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-03_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-03_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": true
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-03_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "TIMEOUT_AFTER_WRITE",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-04",
+      "fault": "TIMEOUT_AFTER_WRITE",
+      "title": "Order writes, then times out; keys ignored; retry without expected_version",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "timeout"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /orders/ord_1001/address-changes/P02-04_probe1",
+          "outcome": {
+            "kind": "rejected",
+            "status": 501,
+            "code": "NOT_SUPPORTED"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 2,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-04_probe1",
+                "from_address_id": "addr_001",
+                "to_address_id": "addr_001",
+                "from_version": 2,
+                "to_version": 3
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 3,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 3,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 3,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 3
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-04_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          },
+          {
+            "id": 2,
+            "idempotency_key": "P02-04_probe1",
+            "from_address_id": "addr_001",
+            "to_address_id": "addr_001",
+            "from_version": 2,
+            "to_version": 3
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 2,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "TIMEOUT_AFTER_WRITE",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-05",
+      "fault": "TIMEOUT_AFTER_WRITE",
+      "title": "Order writes, then times out; keys ignored; retry with expected_version",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "timeout"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /orders/ord_1001/address-changes/P02-05_probe1",
+          "outcome": {
+            "kind": "rejected",
+            "status": 501,
+            "code": "NOT_SUPPORTED"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "rejected",
+            "status": 409,
+            "code": "VERSION_CONFLICT"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-05_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "TIMEOUT_AFTER_WRITE",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-06",
+      "fault": "PERMANENT_REJECTION",
+      "title": "Carrier permanently rejects the change",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /shipments/shp_0001/address-changes",
+          "outcome": {
+            "kind": "rejected",
+            "status": 422,
+            "code": "PROVIDER_REJECTED"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 0,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [],
+        "carrier": [
+          {
+            "fault": "PERMANENT_REJECTION",
+            "fired": 1
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "P02-07",
+      "fault": "SLOW_CONSISTENCY",
+      "title": "Carrier accepts; the next read is stale",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /shipments/shp_0001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "shp_0001",
+                "idempotency_key": "P02-07_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_001",
+                "status": "AWAITING_PICKUP",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_001",
+                "status": "AWAITING_PICKUP",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "order_mutations": [],
+        "carrier_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-07_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ]
+      },
+      "mutation_counts": {
+        "order": 0,
+        "carrier": 1
+      },
+      "rules_fired": {
+        "order": [],
+        "carrier": [
+          {
+            "fault": "SLOW_CONSISTENCY",
+            "fired": 1
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "P02-08",
+      "fault": "CONCURRENT_STATUS_CHANGE",
+      "title": "Order ships after it is read; shipment is dispatched before the carrier write",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "rejected",
+            "status": 409,
+            "code": "VERSION_CONFLICT"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "SHIPPED",
+                "address_id": "addr_002",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "SHIPPED",
+                "address_id": "addr_002",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 2,
+          "step": "read",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 2,
+          "step": "write",
+          "request": "POST /shipments/shp_0001/address-changes",
+          "outcome": {
+            "kind": "rejected",
+            "status": 422,
+            "code": "SHIPMENT_DISPATCHED"
+          }
+        },
+        {
+          "probe": 2,
+          "step": "read_after_1",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "IN_TRANSIT",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 2,
+          "step": "read_after_2",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "IN_TRANSIT",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "SHIPPED",
+          "address_id": "addr_002",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "IN_TRANSIT",
+          "address_id": "addr_002",
+          "version": 2
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 0,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "CONCURRENT_STATUS_CHANGE",
+            "fired": 1
+          }
+        ],
+        "carrier": [
+          {
+            "fault": "CONCURRENT_STATUS_CHANGE",
+            "fired": 1
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "P02-09",
+      "fault": "DUPLICATE_DELIVERY",
+      "title": "Order request duplicated in transit (keys honoured)",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-09_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-09_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "DUPLICATE_DELIVERY",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-10",
+      "fault": "DUPLICATE_DELIVERY",
+      "title": "Order request duplicated in transit (keys ignored)",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-10_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 3,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 3,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 3
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-10_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          },
+          {
+            "id": 2,
+            "idempotency_key": "P02-10_probe1",
+            "from_address_id": "addr_001",
+            "to_address_id": "addr_001",
+            "from_version": 2,
+            "to_version": 3
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 2,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "DUPLICATE_DELIVERY",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-11",
+      "fault": "UNAVAILABLE_STATUS_QUERY",
+      "title": "Order writes and times out; its status endpoint is down",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_002",
+                "version": 1,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "timeout"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /orders/ord_1001/address-changes/P02-11_probe1",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "server_error",
+            "status": 503,
+            "code": "SERVICE_UNAVAILABLE"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /orders/ord_1001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "ord_1001",
+                "idempotency_key": "P02-11_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": true
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /orders/ord_1001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "order": {
+                "id": "ord_1001",
+                "customer_id": "cus_001",
+                "status": "PACKING",
+                "address_id": "addr_001",
+                "version": 2,
+                "carrier_ref": "shp_0001"
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-11_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ],
+        "carrier_mutations": []
+      },
+      "mutation_counts": {
+        "order": 1,
+        "carrier": 0
+      },
+      "rules_fired": {
+        "order": [
+          {
+            "fault": "TIMEOUT_AFTER_WRITE",
+            "fired": 1
+          },
+          {
+            "fault": "UNAVAILABLE_STATUS_QUERY",
+            "fired": 1
+          }
+        ],
+        "carrier": []
+      }
+    },
+    {
+      "scenario_id": "P02-12",
+      "fault": "TIMEOUT_BEFORE_WRITE",
+      "title": "Carrier resets the connection before writing",
+      "target": {
+        "customer_id": "cus_001",
+        "order_id": "ord_1001",
+        "carrier_ref": "shp_0001",
+        "from_address_id": "addr_002",
+        "to_address_id": "addr_001"
+      },
+      "before": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "order_mutations": [],
+        "carrier_mutations": []
+      },
+      "steps": [
+        {
+          "probe": 1,
+          "step": "read",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_002",
+                "status": "AWAITING_PICKUP",
+                "version": 1
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "write",
+          "request": "POST /shipments/shp_0001/address-changes",
+          "outcome": {
+            "kind": "unknown",
+            "reason": "connection_error"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "status_query",
+          "request": "GET /shipments/shp_0001/address-changes/P02-12_probe1",
+          "outcome": {
+            "kind": "rejected",
+            "status": 404,
+            "code": "MUTATION_NOT_FOUND"
+          }
+        },
+        {
+          "probe": 1,
+          "step": "retry_write",
+          "request": "POST /shipments/shp_0001/address-changes",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "mutation": {
+                "id": 1,
+                "entity_id": "shp_0001",
+                "idempotency_key": "P02-12_probe1",
+                "from_address_id": "addr_002",
+                "to_address_id": "addr_001",
+                "from_version": 1,
+                "to_version": 2
+              },
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_001",
+                "status": "AWAITING_PICKUP",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_1",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_001",
+                "status": "AWAITING_PICKUP",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        },
+        {
+          "probe": 1,
+          "step": "read_after_2",
+          "request": "GET /shipments/shp_0001",
+          "outcome": {
+            "kind": "ok",
+            "status": 200,
+            "body": {
+              "shipment": {
+                "carrier_ref": "shp_0001",
+                "address_id": "addr_001",
+                "status": "AWAITING_PICKUP",
+                "version": 2
+              }
+            },
+            "replayed": false
+          }
+        }
+      ],
+      "after": {
+        "order": {
+          "id": "ord_1001",
+          "status": "PACKING",
+          "address_id": "addr_002",
+          "version": 1
+        },
+        "shipment": {
+          "carrier_ref": "shp_0001",
+          "status": "AWAITING_PICKUP",
+          "address_id": "addr_001",
+          "version": 2
+        },
+        "order_mutations": [],
+        "carrier_mutations": [
+          {
+            "id": 1,
+            "idempotency_key": "P02-12_probe1",
+            "from_address_id": "addr_002",
+            "to_address_id": "addr_001",
+            "from_version": 1,
+            "to_version": 2
+          }
+        ]
+      },
+      "mutation_counts": {
+        "order": 0,
+        "carrier": 1
+      },
+      "rules_fired": {
+        "order": [],
+        "carrier": [
+          {
+            "fault": "TIMEOUT_BEFORE_WRITE",
+            "fired": 1
+          }
+        ]
+      }
+    }
+  ]
+}
