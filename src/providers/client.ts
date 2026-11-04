@@ -5,7 +5,10 @@
 
 export type Outcome<T> =
   | { kind: 'ok'; status: number; body: T; replayed: boolean }
-  /** Definitive answer (4xx, or 501): the request was not applied / is not supported. */
+  /**
+   * Definitive answer (4xx, or 501): THIS request was not applied. It says nothing about
+   * whether retrying is useful (409 after a re-read, 429 later); callers branch on `code`.
+   */
   | { kind: 'rejected'; status: number; code: string }
   | { kind: 'unknown'; reason: 'timeout' | 'connection_error' | 'server_error'; status?: number; code?: string };
 
@@ -58,9 +61,11 @@ export class ProviderClient {
     if (res.status >= 400) return { kind: 'rejected', status: res.status, code: (await errorCode(res)) ?? 'UNKNOWN_ERROR' };
     try {
       return { kind: 'ok', status: res.status, body: (await res.json()) as T, replayed: res.headers.get('idempotent-replayed') === 'true' };
-    } catch {
+    } catch (err) {
       // A 2xx with an unreadable body tells us nothing reliable about the side effect.
-      return { kind: 'unknown', reason: 'server_error', status: res.status };
+      const name = (err as { name?: string }).name;
+      const reason = name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'server_error';
+      return { kind: 'unknown', reason, status: res.status };
     }
   }
 }

@@ -42,8 +42,8 @@ export function renderTraceSummary(doc: TraceDoc): string {
   ];
   for (const t of doc.traces) {
     const steps = t.steps.map((s) => `${s.probe}.${s.step}: ${fmt(s.outcome)}`).join('<br>');
-    const o = t.after.order as { address_id: string; version: number; status: string };
-    const c = t.after.shipment as { address_id: string; version: number; status: string };
+    const o = t.after.order as Entity;
+    const c = t.after.shipment as Entity;
     lines.push(
       `| ${t.scenario_id} ${t.title} | ${t.fault} | ${steps} | ${o.address_id} v${o.version} ${o.status} | ${c.address_id} v${c.version} ${c.status} | ${t.mutation_counts.order} / ${t.mutation_counts.carrier} |`,
     );

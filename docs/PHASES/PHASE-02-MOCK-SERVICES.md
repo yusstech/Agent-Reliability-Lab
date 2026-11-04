@@ -77,7 +77,7 @@ It also records the rejected options: separate databases, convention-only isolat
 ```
 npm run db:down && npm run db:up && npm run migrate && npm run seed
 npm run typecheck   # exit 0
-npm test            # 11 files, 72 tests passed
+npm test            # 12 files, 78 tests passed
 npm run traces      # wrote 12 scenario traces to docs/PHASES/evidence/
 ```
 
@@ -93,6 +93,19 @@ npm run traces      # wrote 12 scenario traces to docs/PHASES/evidence/
 - **P02-07:** the write succeeds, the next read returns the old address, and the one after returns the new address. A verifier that reads once can be fooled.
 - **P02-08:** a read-then-write with `expected_version` catches the concurrent shipment (`409`). The carrier refuses its write (`422 SHIPMENT_DISPATCHED`).
 - **P02-11:** the write happened and the status endpoint is down. Only the honoured-key replay makes the retry safe.
+
+**Code review of PR #1 (2026-11-04).** It found 10 issues. 9 were confirmed and fixed; for the 10th, the classification stays and the contract was made explicit.
+
+| # | Issue | Resolution | Test |
+| --- | --- | --- | --- |
+| 1–2 | Fault rules fired before the existence and ownership check, so a fault could answer for a missing or not-owned order (leaking existence) and spend its trigger budget | Entity resolved first on every route | PB-08 (fails on the pre-fix code) |
+| 3 | Claim that 408/429 should be UNKNOWN | Not a bug: a 4xx means *this* request was not applied. The client contract now states that retryability is decided by `code` | CL-01 |
+| 4 | A timeout while reading a 2xx body was reported as `server_error` | Reported as `timeout` | CL-02 (fails on the pre-fix code) |
+| 5 | Provider ports were not validated (`''` gave a random port) | Shared `parsePort` | CF-04 |
+| 6 | Hung-socket bookkeeping outlived closed sockets | Cleared on socket `close` | Not unit-testable; covered by close-time cleanup |
+| 7 | The probe silently dropped `expected_version` when its read failed | The probe refuses to run | PB-09 |
+| 8 | `GRANT role TO CURRENT_USER` could fail on a cluster where another user created the roles | Granted only when membership is missing (migration edited in place, since it is unmerged) | Clean-room migrate |
+| 9–10 | Duplicated id/key patterns and copy-pasted trace code | `src/providers/ids.ts`; helpers | Existing tests and TR-02 |
 
 ## 7. Limitations
 - **Isolation is a guard, not a security boundary.** The connecting user can `RESET ROLE`. The trace observer reads both schemas as the application user by design: it is the experiment's view of reality.

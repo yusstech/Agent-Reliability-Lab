@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phase 01 (foundation) has passed its gate** ([report](docs/PHASES/PHASE-01-FOUNDATION.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 72 automated tests pass from a clean database. Phase 02 (mock providers and fault injection) is tested. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phase 01 (foundation) has passed its gate** ([report](docs/PHASES/PHASE-01-FOUNDATION.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 78 automated tests pass from a clean database. Phase 02 (mock providers and fault injection) is tested. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 
@@ -48,7 +48,7 @@ npm run db:up            # Postgres 16 on 127.0.0.1:54329
 npm run migrate          # → migrations applied: 0001_foundation
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
-npm test                 # → Tests 72 passed (72); resets its own arl_test database
+npm test                 # → Tests 78 passed (78); resets its own arl_test database
 npm run traces           # regenerates the Phase 02 fault-trace evidence
 npm start                # API on http://127.0.0.1:3000
 npm run start:order      # mock order service on :3101 (separate process)

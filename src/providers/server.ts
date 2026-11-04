@@ -1,5 +1,5 @@
 // Starts one mock provider as its own process: `node src/providers/server.ts order|carrier`.
-import { assertNotProduction, loadConfig } from '../config.ts';
+import { assertNotProduction, loadConfig, parsePort } from '../config.ts';
 import { buildCarrierService } from './carrier-service.ts';
 import { buildOrderService } from './order-service.ts';
 import { createProviderPool } from './pools.ts';
@@ -12,7 +12,7 @@ if (which !== 'order' && which !== 'carrier') {
 const config = loadConfig();
 assertNotProduction(config.nodeEnv, `the ${which} mock provider`);
 const portVar = which === 'order' ? 'ORDER_SERVICE_PORT' : 'CARRIER_SERVICE_PORT';
-const port = Number(process.env[portVar] ?? (which === 'order' ? 3101 : 3102));
+const port = parsePort(process.env, portVar, which === 'order' ? 3101 : 3102);
 
 const pool = createProviderPool(config.databaseUrl, which === 'order' ? 'arl_order_svc' : 'arl_carrier_svc');
 const { app } = (which === 'order' ? buildOrderService : buildCarrierService)({ pool, devRoutes: true });

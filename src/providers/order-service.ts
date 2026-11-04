@@ -1,4 +1,5 @@
 import type { Order } from '../domain/types.ts';
+import { ORDER_ID } from './ids.ts';
 import { buildProvider, type ProviderOptions } from './provider.ts';
 
 /** Mock order system of record. Customer-scoped; no eligibility rule (I4 is app policy). */
@@ -9,7 +10,7 @@ export function buildOrderService(options: ProviderOptions) {
       name: 'order-service',
       prefix: '/orders',
       entityName: 'order',
-      idPattern: /^ord_[a-z0-9]{1,32}$/,
+      idPattern: ORDER_ID,
       entity: {
         table: 'order_svc.orders',
         keyColumn: 'id',

@@ -136,9 +136,42 @@ describe('provider behaviour', () => {
     expect(await order.request('GET', path)).toMatchObject({ kind: 'rejected', status: 501, code: 'NOT_SUPPORTED' });
   });
 
+  it('PB-08 faults never answer for an entity the caller cannot see, and spend no budget on it', async () => {
+    await admin.order.request('PUT', '/_dev/scenario', {
+      scenario_id: 'leak',
+      honour_idempotency_keys: false,
+      rules: [
+        { fault: 'PERMANENT_REJECTION', target: '*' },
+        { fault: 'UNAVAILABLE_STATUS_QUERY', target: '*', on: 'read' },
+      ],
+    });
+    for (const id of [otherCustomersOrder.id, 'ord_9999']) {
+      expect(await order.request('POST', `/orders/${id}/address-changes`, change())).toMatchObject({ kind: 'rejected', status: 404, code: 'NOT_FOUND' });
+      expect(await order.request('GET', `/orders/${id}`)).toMatchObject({ kind: 'rejected', status: 404, code: 'NOT_FOUND' });
+      expect(await order.request('GET', `/orders/${id}/address-changes/key_test_0001`)).toMatchObject({ kind: 'rejected', status: 404, code: 'NOT_FOUND' });
+    }
+    const state = await admin.order.request<{ rules: { matched: number; fired: number }[] }>('GET', '/_dev/state');
+    expect(state.kind === 'ok' && state.body.rules.map((r) => [r.matched, r.fired])).toEqual([[0, 0], [0, 0]]);
+    // The budget is intact for the caller's own order.
+    expect(await order.request('POST', `/orders/${t.order_id}/address-changes`, change())).toMatchObject({ kind: 'rejected', code: 'PROVIDER_REJECTED' });
+  });
+
   it('PB-07 invalid scenario configs are refused with field details', async () => {
     const res = await admin.order.request('PUT', '/_dev/scenario', { scenario_id: 's', rules: [{ fault: 'TIMEOUT_AFTER_WRITE', target: '*', on: 'read' }] });
     expect(res).toMatchObject({ kind: 'rejected', status: 400, code: 'VALIDATION_FAILED' });
+  });
+});
+
+describe('trace probe integrity', () => {
+  it('PB-09 a probe that needs expected_version refuses to run unversioned when its read fails', async () => {
+    const { runScenarioTrace } = await import('../../src/providers/trace.ts');
+    const scenario = {
+      id: 'P02-XX', fault: 'UNAVAILABLE_STATUS_QUERY' as const, title: 'read fails',
+      order: { rules: [{ fault: 'UNAVAILABLE_STATUS_QUERY' as const, target: '*', on: 'read' as const }] },
+      probes: [{ provider: 'order' as const, expectedVersion: true }],
+    };
+    await expect(runScenarioTrace({ ...p, observer, clientTimeoutMs: 200 }, scenario, t)).rejects.toThrow(/expected_version required/);
+    expect(await counts()).toEqual({ order: 0, carrier: 0 });
   });
 });
 

@@ -4,10 +4,11 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type pg from 'pg';
 import { ProviderError } from './http.ts';
+import { IDEMPOTENCY_KEY } from './ids.ts';
 
 export const AddressChangeBodySchema = z.strictObject({
   address_id: z.string().regex(/^addr_[a-z0-9]{1,32}$/),
-  idempotency_key: z.string().regex(/^[A-Za-z0-9_-]{8,128}$/).optional(),
+  idempotency_key: z.string().regex(IDEMPOTENCY_KEY).optional(),
   expected_version: z.number().int().min(1).optional(),
 });
 export type AddressChangeBody = z.infer<typeof AddressChangeBodySchema>;

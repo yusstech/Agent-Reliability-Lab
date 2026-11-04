@@ -1,5 +1,6 @@
 import type { CarrierShipment } from '../domain/types.ts';
 import { ProviderError } from './http.ts';
+import { SHIPMENT_ID } from './ids.ts';
 import { buildProvider, type ProviderOptions } from './provider.ts';
 
 /** Mock carrier system of record. Merchant-trusted; refuses changes once dispatched. */
@@ -10,7 +11,7 @@ export function buildCarrierService(options: ProviderOptions) {
       name: 'carrier-service',
       prefix: '/shipments',
       entityName: 'shipment',
-      idPattern: /^shp_[a-z0-9]{1,32}$/,
+      idPattern: SHIPMENT_ID,
       entity: {
         table: 'carrier_svc.shipments',
         keyColumn: 'carrier_ref',

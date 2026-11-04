@@ -69,6 +69,8 @@ Every trigger is **count-based**: a rule fires on the n-th matching operation (`
 | `DUPLICATE_DELIVERY` | mutation | The request is processed twice, as if duplicated in transit |
 | `UNAVAILABLE_STATUS_QUERY` | status query, read | `503 SERVICE_UNAVAILABLE` |
 
+**Faults act only on requests the caller was entitled to make.** Every route resolves the entity, checking existence and actor visibility, before any rule fires. A missing or not-owned entity is a plain `404`, and it consumes no fault budget.
+
 `NORMAL` means no rules. Rules combine: for example, `TIMEOUT_AFTER_WRITE` together with `UNAVAILABLE_STATUS_QUERY` models "the write happened and we can't find out".
 
 **Two levels of duplicate delivery.** The provider-level fault above duplicates a request *in transit*. The spec's worker-level fault, the same job delivered twice to the worker, belongs to the orchestrator and is built in Phase 03.
@@ -79,7 +81,7 @@ Every trigger is **count-based**: a rule fires on the n-th matching operation (`
 `PUT /_dev/scenario` and `GET /_dev/state` are registered only when dev routes are enabled. Provider servers refuse to start with `NODE_ENV=production` (spec §7).
 
 ## Consequences
-- Phase 03 adapters must treat timeouts, connection errors and 5xx after a mutation as **unknown**, never as failure. The one exception is `501`, which is a permanent statement about the API. The shared provider client (`src/providers/client.ts`) encodes this classification.
+- Phase 03 adapters must treat timeouts, connection errors and 5xx after a mutation as **unknown**, never as failure. The one exception is `501`, which is a permanent statement about the API. `rejected` promises only that *this* request was not applied, not that retrying is pointless: callers branch on `code`. The shared provider client (`src/providers/client.ts`) encodes this classification.
 - **`CONCURRENT_STATUS_CHANGE` is configured on each provider separately,** because there is no cross-service coordinator. If the caller never reaches the carrier, the order can end `SHIPPED` while the shipment is still `AWAITING_PICKUP`. Ground truth for each case records this.
 - Golden traces make any accidental change in provider behaviour fail CI.
 

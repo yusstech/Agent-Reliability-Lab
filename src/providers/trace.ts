@@ -82,6 +82,10 @@ export async function runScenarioTrace(env: TraceEnv, scenario: ProviderScenario
 
     const read = await run('read', 'GET', base);
     const entity = read.kind === 'ok' ? (Object.values(read.body)[0] as { version: number }) : undefined;
+    if (probe.expectedVersion && !entity) {
+      // Sending the write unversioned would silently turn this into a different experiment.
+      throw new Error(`${scenario.id} probe ${probeNo}: expected_version required but the read did not succeed; set expectedVersion: false`);
+    }
     const body = {
       address_id: target.to_address_id,
       idempotency_key: key,
@@ -97,10 +101,11 @@ export async function runScenarioTrace(env: TraceEnv, scenario: ProviderScenario
   }
 
   const after = await observe(env.observer, target);
-  const ruleState = {
-    order: await admin.order.request('GET', '/_dev/state'),
-    carrier: await admin.carrier.request('GET', '/_dev/state'),
+  const rulesFired = async (p: 'order' | 'carrier') => {
+    const state = await admin[p].request<{ rules: { fault: string; fired: number }[] }>('GET', '/_dev/state');
+    return state.kind === 'ok' ? state.body.rules.map((r) => ({ fault: r.fault, fired: r.fired })) : null;
   };
+  const rules_fired = { order: await rulesFired('order'), carrier: await rulesFired('carrier') };
   for (const p of ['order', 'carrier'] as const) await admin[p].request('DELETE', '/_dev/scenario');
 
   return {
@@ -112,10 +117,7 @@ export async function runScenarioTrace(env: TraceEnv, scenario: ProviderScenario
     steps,
     after,
     mutation_counts: { order: after.order_mutations.length, carrier: after.carrier_mutations.length },
-    rules_fired: {
-      order: ruleState.order.kind === 'ok' ? (ruleState.order.body as { rules: { fault: string; fired: number }[] }).rules.map((r) => ({ fault: r.fault, fired: r.fired })) : null,
-      carrier: ruleState.carrier.kind === 'ok' ? (ruleState.carrier.body as { rules: { fault: string; fired: number }[] }).rules.map((r) => ({ fault: r.fault, fired: r.fired })) : null,
-    },
+    rules_fired,
   };
 }
 export type ScenarioTrace = Awaited<ReturnType<typeof runScenarioTrace>>;

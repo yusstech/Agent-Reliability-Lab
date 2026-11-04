@@ -121,6 +121,10 @@ export function createProviderApp(name: string, engine: FaultEngine<unknown>, de
     }, rule.params.hang_ms);
     timer.unref();
     hung.set(socket, timer);
+    socket.once('close', () => {
+      clearTimeout(timer);
+      hung.delete(socket);
+    });
   }
 
   return { app, failTransport };

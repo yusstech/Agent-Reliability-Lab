@@ -1,6 +1,7 @@
 // Deterministic fault engine for the mock providers (ADR-0008). Count-based triggers only:
 // no wall clock, no randomness. One engine instance per provider process.
 import { z } from 'zod';
+import { ENTITY_ID } from './ids.ts';
 
 export const FAULT_MODES = [
   'NORMAL',
@@ -42,7 +43,6 @@ const ALLOWED_OPS: Record<ProviderKind, Partial<Record<FaultMode, readonly Opera
   },
 };
 
-const ENTITY_ID = /^(ord|shp)_[a-z0-9]{1,32}$/;
 
 const RuleSchema = z.strictObject({
   fault: z.enum(FAULT_MODES).exclude(['NORMAL']),

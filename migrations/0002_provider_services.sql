@@ -49,9 +49,19 @@ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- Lets a non-superuser application user SET ROLE; a no-op for superusers.
-GRANT arl_order_svc TO CURRENT_USER;
-GRANT arl_carrier_svc TO CURRENT_USER;
+-- Lets a non-superuser application user SET ROLE. Granted only when missing (superusers
+-- already qualify), so re-running in another database on the cluster needs no ADMIN
+-- rights on a role someone else created. If membership is missing AND cannot be
+-- granted, failing here is correct: the provider pools could not assume the role.
+DO $$
+BEGIN
+  IF NOT pg_has_role(current_user, 'arl_order_svc', 'MEMBER') THEN
+    EXECUTE format('GRANT arl_order_svc TO %I', current_user);
+  END IF;
+  IF NOT pg_has_role(current_user, 'arl_carrier_svc', 'MEMBER') THEN
+    EXECUTE format('GRANT arl_carrier_svc TO %I', current_user);
+  END IF;
+END $$;
 
 GRANT USAGE ON SCHEMA order_svc TO arl_order_svc;
 GRANT SELECT, INSERT, UPDATE ON order_svc.orders TO arl_order_svc;

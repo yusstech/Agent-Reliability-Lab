@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { AddressChangeBodySchema, applyAddressChange, type EntityTable, findMutationByKey } from './address-change.ts';
 import { FaultEngine, type FaultMode, type FaultRule, type ProviderKind } from './faults.ts';
 import { createProviderApp, parseInput, ProviderError } from './http.ts';
+import { IDEMPOTENCY_KEY } from './ids.ts';
 
 export interface ProviderDefinition<Row extends { address_id: string; version: number }> {
   kind: ProviderKind;
@@ -27,7 +28,6 @@ export interface ProviderOptions {
   devRoutes?: boolean;
 }
 
-const KEY = /^[A-Za-z0-9_-]{8,128}$/;
 const pick = (rules: FaultRule[], fault: FaultMode) => rules.find((r) => r.fault === fault);
 const unavailable = () => new ProviderError(503, 'SERVICE_UNAVAILABLE', 'service temporarily unavailable');
 
@@ -38,7 +38,7 @@ export function buildProvider<Row extends { address_id: string; version: number 
   const engine = new FaultEngine<Row>(def.kind);
   const { app, failTransport } = createProviderApp(def.name, engine as FaultEngine<unknown>, devRoutes);
   const IdParams = z.strictObject({ id: z.string().regex(def.idPattern) });
-  const KeyParams = IdParams.extend({ key: z.string().regex(KEY) });
+  const KeyParams = IdParams.extend({ key: z.string().regex(IDEMPOTENCY_KEY) });
 
   function actorOf(request: FastifyRequest): string | null {
     if (!def.actor) return null;
@@ -48,8 +48,11 @@ export function buildProvider<Row extends { address_id: string; version: number 
     }
     return value;
   }
-  const visible = (actor: string | null) => (row: Row) => actor === null || !def.actor || def.actor.canSee(row, actor);
+  const visible = (actor: string | null) => (row: Row) => actor === null || def.actor!.canSee(row, actor);
 
+  // Every route resolves the entity first, so faults only ever act on requests the caller
+  // was entitled to make: a missing or not-owned entity is a plain 404 and consumes no
+  // fault budget.
   async function load(id: string, actor: string | null): Promise<Row> {
     const { rows } = await pool.query<Row>(`SELECT ${def.entity.columns} FROM ${def.entity.table} WHERE ${def.entity.keyColumn} = $1`, [id]);
     const row = rows[0];
@@ -60,12 +63,12 @@ export function buildProvider<Row extends { address_id: string; version: number 
   app.get(`${def.prefix}/:id`, async (request, reply) => {
     const { id } = parseInput(IdParams, request.params);
     const actor = actorOf(request);
+    const current = await load(id, actor);
     const rules = engine.fire('read', id);
     const timeout = pick(rules, 'TIMEOUT_BEFORE_WRITE');
     if (timeout) return failTransport(request, reply, timeout);
     if (pick(rules, 'UNAVAILABLE_STATUS_QUERY')) throw unavailable();
 
-    const current = await load(id, actor);
     const served = engine.takeStale(id) ?? current;
     // The caller has now "validated" the entity; the world moves on behind it.
     if (pick(rules, 'CONCURRENT_STATUS_CHANGE')) await def.concurrentStatusChange(pool, id);
@@ -76,6 +79,7 @@ export function buildProvider<Row extends { address_id: string; version: number 
     const { id } = parseInput(IdParams, request.params);
     const actor = actorOf(request);
     const body = parseInput(AddressChangeBodySchema, request.body);
+    await load(id, actor);
     const rules = engine.fire('mutation', id);
 
     if (pick(rules, 'PERMANENT_REJECTION')) throw new ProviderError(422, 'PROVIDER_REJECTED', 'provider rejected the change');
@@ -104,6 +108,7 @@ export function buildProvider<Row extends { address_id: string; version: number 
   app.get(`${def.prefix}/:id/address-changes/:key`, async (request, reply) => {
     const { id, key } = parseInput(KeyParams, request.params);
     const actor = actorOf(request);
+    await load(id, actor);
     const rules = engine.fire('status_query', id);
     const timeout = pick(rules, 'TIMEOUT_BEFORE_WRITE');
     if (timeout) return failTransport(request, reply, timeout);
@@ -111,7 +116,6 @@ export function buildProvider<Row extends { address_id: string; version: number 
     if (!engine.honoursIdempotencyKeys) {
       throw new ProviderError(501, 'NOT_SUPPORTED', 'this provider does not support lookup by idempotency key');
     }
-    await load(id, actor);
     const mutation = await findMutationByKey(pool, def.entity as EntityTable<unknown>, id, key);
     if (!mutation) throw new ProviderError(404, 'MUTATION_NOT_FOUND', 'no mutation was applied with this key');
     return { applied: true, mutation };
