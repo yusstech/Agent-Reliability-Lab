@@ -47,7 +47,8 @@ try {
 }
 const fixture = generateFixture();
 const a = await startVariantA(config.databaseUrl, { clientTimeoutMs: ENV.client_timeout_ms });
-const pg = (await a.pool.query<{ v: string }>('SHOW server_version')).rows[0]?.v;
+const pg = (await a.pool.query<{ server_version: string }>('SHOW server_version')).rows[0]?.server_version;
+if (!pg) throw new Error('could not read the PostgreSQL version for the manifest');
 const manifest = {
   run_id: runId,
   created_at: new Date().toISOString(),
