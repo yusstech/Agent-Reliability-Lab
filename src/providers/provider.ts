@@ -18,7 +18,7 @@ export interface ProviderDefinition<Row extends { address_id: string; version: n
   idPattern: RegExp;
   entity: EntityTable<Row>;
   /** If set, every request must carry this header and may only see rows it returns true for. */
-  actor?: { header: string; pattern: RegExp; canSee: (row: Row, actor: string) => boolean };
+  actor?: { header: string; pattern: RegExp; ownerColumn: string; canSee: (row: Row, actor: string) => boolean };
   /** World change applied by CONCURRENT_STATUS_CHANGE (not a client mutation). */
   concurrentStatusChange: (pool: pg.Pool, entityId: string) => Promise<void>;
 }
@@ -58,6 +58,20 @@ export function buildProvider<Row extends { address_id: string; version: number 
     const row = rows[0];
     if (!row || !visible(actor)(row)) throw new ProviderError(404, 'NOT_FOUND', `${def.entityName} not found`);
     return row;
+  }
+
+  if (def.actor) {
+    // The acting customer's own entities (used by the rule-based intent layer). No fault
+    // hooks: listing is not part of the write path under study.
+    const { ownerColumn } = def.actor;
+    app.get(def.prefix, async (request) => {
+      const actor = actorOf(request) as string;
+      const { rows } = await pool.query<Row>(
+        `SELECT ${def.entity.columns} FROM ${def.entity.table} WHERE ${ownerColumn} = $1 ORDER BY ${def.entity.keyColumn}`,
+        [actor],
+      );
+      return { [`${def.entityName}s`]: rows };
+    });
   }
 
   app.get(`${def.prefix}/:id`, async (request, reply) => {

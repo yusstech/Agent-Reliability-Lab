@@ -1,0 +1,2348 @@
+{
+  "fixture": {
+    "version": "base-v1",
+    "seed": 1042
+  },
+  "client_timeout_ms": 150,
+  "traces": [
+    {
+      "scenario_id": "P03-01",
+      "fault": "NORMAL",
+      "title": "No faults",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 4,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0301_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0301_order_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0301_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0301_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 13,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-02",
+      "fault": "TIMEOUT_BEFORE_WRITE",
+      "title": "Order times out before writing (keys honoured)",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 6,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "TIMEOUT",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1"
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "PENDING_RECONCILIATION",
+          "reason_code": "ORDER_WRITE_OUTCOME_UNKNOWN",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_REJECTED",
+          "result": "rejected",
+          "error_code": "MUTATION_NOT_FOUND",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "TRANSITION",
+          "from_status": "PENDING_RECONCILIATION",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WRITE_CONFIRMED_NOT_APPLIED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 11,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 13,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 14,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 15,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 16,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 17,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0302_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 18,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 19,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-03",
+      "fault": "TIMEOUT_AFTER_WRITE",
+      "title": "Order writes, then times out (keys honoured)",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 5,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "TIMEOUT",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_order_v1"
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "PENDING_RECONCILIATION",
+          "reason_code": "ORDER_WRITE_OUTCOME_UNKNOWN",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "TRANSITION",
+          "from_status": "PENDING_RECONCILIATION",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "WRITE_CONFIRMED_APPLIED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 11,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 13,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0303_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 14,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 15,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-04",
+      "fault": "TIMEOUT_AFTER_WRITE",
+      "title": "Order writes, then times out; providers ignore keys",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 5,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "TIMEOUT",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_order_v1"
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "PENDING_RECONCILIATION",
+          "reason_code": "ORDER_WRITE_OUTCOME_UNKNOWN",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_REJECTED",
+          "result": "rejected",
+          "error_code": "NOT_SUPPORTED",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "version": 2,
+            "provider": "order",
+            "address_id": "addr_001"
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "TRANSITION",
+          "from_status": "PENDING_RECONCILIATION",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "WRITE_OBSERVED_APPLIED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 12,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 13,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 14,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0304_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 15,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 16,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-05",
+      "fault": "PERMANENT_REJECTION",
+      "title": "Carrier rejects after the order changed: compensation",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 5,
+      "customer_told": "not_changed",
+      "final_status": "REJECTED",
+      "reason": "CHANGE_REVERSED_AFTER_CARRIER_REJECTION",
+      "truth": {
+        "order": {
+          "address_id": "addr_002",
+          "version": 3,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_002",
+          "version": 1,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 2,
+          "carrier": 0
+        },
+        "both_changed": false,
+        "neither_changed": true
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0305_order_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_REJECTED",
+          "result": "rejected",
+          "error_code": "PROVIDER_REJECTED",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_carrier_v1"
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "COMPENSATING",
+          "reason_code": "CARRIER_WRITE_REJECTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 13,
+          "step": "ORDER_COMPENSATION_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_order_revert_v2",
+            "provider": "order",
+            "expected_version": 2
+          }
+        },
+        {
+          "sequence": 14,
+          "step": "COMPENSATION_ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "version": 2,
+            "address_id": "addr_001"
+          }
+        },
+        {
+          "sequence": 15,
+          "step": "ORDER_COMPENSATION_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_order_revert_v2"
+          }
+        },
+        {
+          "sequence": 16,
+          "step": "CONTINUE",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "ORDER_REVERTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 17,
+          "step": "COMPENSATION_ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "version": 3,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 18,
+          "step": "TRANSITION",
+          "from_status": "COMPENSATING",
+          "to_status": "REJECTED",
+          "reason_code": "CHANGE_REVERSED_AFTER_CARRIER_REJECTION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "compensation": {
+              "orderAddressId": "addr_002",
+              "carrierAddressId": "addr_002"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-06",
+      "fault": "CONCURRENT_STATUS_CHANGE",
+      "title": "Order ships between validation and write",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 3,
+      "customer_told": "not_changed",
+      "final_status": "REJECTED",
+      "reason": "ORDER_NO_LONGER_ELIGIBLE",
+      "truth": {
+        "order": {
+          "address_id": "addr_002",
+          "version": 2,
+          "status": "SHIPPED"
+        },
+        "shipment": {
+          "address_id": "addr_002",
+          "version": 1,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 0,
+          "carrier": 0
+        },
+        "both_changed": false,
+        "neither_changed": true
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0306_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_REJECTED",
+          "result": "rejected",
+          "error_code": "VERSION_CONFLICT",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0306_order_v1"
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "ORDER_VERSION_CONFLICT",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 1,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 9,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "SHIPPED",
+            "version": 2,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "REJECTED",
+          "reason_code": "ORDER_NO_LONGER_ELIGIBLE",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-07",
+      "fault": "SLOW_CONSISTENCY",
+      "title": "Carrier read is stale after the write",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 6,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0307_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0307_order_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0307_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0307_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 13,
+          "step": "VERIFY_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "MISMATCH",
+          "result": "differs",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "orderAddressId": "addr_001",
+            "carrierAddressId": "addr_002"
+          }
+        },
+        {
+          "sequence": 14,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "VERIFICATION_MISMATCH",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 1,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 15,
+          "step": "VERIFY_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "MISMATCH",
+          "result": "differs",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "orderAddressId": "addr_001",
+            "carrierAddressId": "addr_002"
+          }
+        },
+        {
+          "sequence": 16,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "VERIFICATION_MISMATCH",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 2,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 17,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-08",
+      "fault": "DUPLICATE_DELIVERY",
+      "title": "Order request duplicated in transit; keys ignored",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 4,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0308_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0308_order_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0308_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0308_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 13,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-09",
+      "fault": "UNAVAILABLE_STATUS_QUERY",
+      "title": "Write landed; status and reads then unavailable",
+      "worker_crashed": false,
+      "worker_steps_after_recovery": 7,
+      "customer_told": "needs_review",
+      "final_status": "NEEDS_MANUAL_REVIEW",
+      "reason": "RECONCILIATION_UNAVAILABLE_UNRESOLVED",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_002",
+          "version": 1,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 0
+        },
+        "both_changed": false,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "ORDER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "TIMEOUT",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1"
+          }
+        },
+        {
+          "sequence": 8,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "PENDING_RECONCILIATION",
+          "reason_code": "ORDER_WRITE_OUTCOME_UNKNOWN",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 9,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 11,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "RECONCILIATION_UNAVAILABLE",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 1,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 13,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 14,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "RECONCILIATION_UNAVAILABLE",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 2,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 15,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 16,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 17,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "RECONCILIATION_UNAVAILABLE",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 3,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 18,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 19,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 20,
+          "step": "RETRY_SCHEDULED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "RECONCILIATION_UNAVAILABLE",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempt": 4,
+            "delay_ms": 0
+          }
+        },
+        {
+          "sequence": 21,
+          "step": "RECONCILE_STATUS_QUERY",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order"
+          }
+        },
+        {
+          "sequence": 22,
+          "step": "RECONCILE_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "OUTCOME_UNKNOWN",
+          "result": "unknown",
+          "error_code": "SERVICE_UNAVAILABLE",
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 23,
+          "step": "TRANSITION",
+          "from_status": "PENDING_RECONCILIATION",
+          "to_status": "NEEDS_MANUAL_REVIEW",
+          "reason_code": "RECONCILIATION_UNAVAILABLE_UNRESOLVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "attempts": 5
+          }
+        }
+      ]
+    },
+    {
+      "scenario_id": "P03-10",
+      "fault": "WORKER_CRASH",
+      "title": "Worker dies right after the order write; a second worker recovers",
+      "worker_crashed": true,
+      "worker_steps_after_recovery": 3,
+      "customer_told": "completed",
+      "final_status": "COMPLETED",
+      "reason": "VERIFIED_BOTH_SYSTEMS",
+      "truth": {
+        "order": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "PACKING"
+        },
+        "shipment": {
+          "address_id": "addr_001",
+          "version": 2,
+          "status": "AWAITING_PICKUP"
+        },
+        "mutations": {
+          "order": 1,
+          "carrier": 1
+        },
+        "both_changed": true,
+        "neither_changed": false
+      },
+      "false_claim": false,
+      "events": [
+        {
+          "sequence": 1,
+          "step": "TRANSITION",
+          "from_status": null,
+          "to_status": "RECEIVED",
+          "reason_code": "REQUEST_RECEIVED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 2,
+          "step": "TRANSITION",
+          "from_status": "RECEIVED",
+          "to_status": "NEEDS_CONFIRMATION",
+          "reason_code": "AWAITING_CUSTOMER_CONFIRMATION",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 3,
+          "step": "TRANSITION",
+          "from_status": "NEEDS_CONFIRMATION",
+          "to_status": "QUEUED",
+          "reason_code": "CONFIRMED_BY_CUSTOMER",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 4,
+          "step": "TRANSITION",
+          "from_status": "QUEUED",
+          "to_status": "UPDATING_ORDER",
+          "reason_code": "WORK_STARTED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 5,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0310_order_v1",
+            "provider": "order",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 2,
+            "address_id": "addr_001"
+          }
+        },
+        {
+          "sequence": 7,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_ORDER",
+          "to_status": "UPDATING_CARRIER",
+          "reason_code": "ORDER_AT_TARGET",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 8,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0310_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 9,
+          "step": "CARRIER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "AWAITING_PICKUP",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_WRITE_RESULT",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": "1",
+          "detail": {
+            "key": "op_p0310_carrier_v1",
+            "replayed": false
+          }
+        },
+        {
+          "sequence": 11,
+          "step": "TRANSITION",
+          "from_status": "UPDATING_CARRIER",
+          "to_status": "VERIFYING",
+          "reason_code": "CARRIER_UPDATED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": null
+        },
+        {
+          "sequence": 12,
+          "step": "TRANSITION",
+          "from_status": "VERIFYING",
+          "to_status": "COMPLETED",
+          "reason_code": "VERIFIED_BOTH_SYSTEMS",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "verification": {
+              "orderAddressId": "addr_001",
+              "carrierAddressId": "addr_001"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

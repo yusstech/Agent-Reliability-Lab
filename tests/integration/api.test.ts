@@ -5,20 +5,28 @@ import { generateFixture } from '../../fixtures/generate.ts';
 import { buildApp } from '../../src/app.ts';
 import { createPool } from '../../src/db/pool.ts';
 import { seed } from '../../src/db/seed.ts';
+import { createProviders } from '../../src/workflow/adapters.ts';
+import { startProviderPair } from '../../src/providers/harness.ts';
+import { testDatabaseUrl } from '../helpers/db.ts';
 import { createTestPool } from '../helpers/db.ts';
 
 const pool: pg.Pool = createTestPool();
 let app: FastifyInstance;
+let pair: Awaited<ReturnType<typeof startProviderPair>>;
+// Nothing listens here: for apps whose provider calls must not be reached.
+const unreachable = createProviders({ orderUrl: 'http://127.0.0.1:1', carrierUrl: 'http://127.0.0.1:1', timeoutMs: 100 });
 const auth = { authorization: 'Bearer mock_session_cus_001' };
-const valid = { order_id: 'ord_1001', new_address_id: 'addr_002', idempotency_key: 'req_73a8' };
+const valid = { order_id: 'ord_1001', new_address_id: 'addr_001', idempotency_key: 'req_73a8' };
 
 beforeAll(async () => {
   await seed(pool, generateFixture());
-  app = buildApp({ pool });
+  pair = await startProviderPair(testDatabaseUrl());
+  app = buildApp({ pool, providers: createProviders({ orderUrl: pair.orderUrl, carrierUrl: pair.carrierUrl }) });
   await app.ready();
 });
 afterAll(async () => {
   await app.close();
+  await pair.close();
   await pool.end();
 });
 
@@ -38,12 +46,12 @@ describe('HTTP foundation', () => {
   it('API-01 /health reports database and schema version', async () => {
     const res = await app.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: 'ok', database: 'ok', schema_version: '0002_provider_services' });
+    expect(res.json()).toEqual({ status: 'ok', database: 'ok', schema_version: '0003_workflow' });
   });
 
   it('API-02 /health returns 503 DEPENDENCY_UNAVAILABLE when the database is unreachable', async () => {
     const deadPool = createPool('postgres://nobody:none@127.0.0.1:1/none');
-    const deadApp = buildApp({ pool: deadPool });
+    const deadApp = buildApp({ pool: deadPool, providers: unreachable });
     const res = await deadApp.inject({ method: 'GET', url: '/health' });
     expect(res.statusCode).toBe(503);
     expectEnvelope(res, 'DEPENDENCY_UNAVAILABLE');
@@ -53,7 +61,7 @@ describe('HTTP foundation', () => {
 
   it('API-02b authenticated routes return 503, not 500, when the session store is unreachable', async () => {
     const deadPool = createPool('postgres://nobody:none@127.0.0.1:1/none');
-    const deadApp = buildApp({ pool: deadPool });
+    const deadApp = buildApp({ pool: deadPool, providers: unreachable });
     const res = await deadApp.inject({ method: 'GET', url: '/v1/session', headers: auth });
     expect(res.statusCode).toBe(503);
     expectEnvelope(res, 'DEPENDENCY_UNAVAILABLE');
@@ -148,11 +156,11 @@ describe('HTTP foundation', () => {
     expectEnvelope(big, 'PAYLOAD_TOO_LARGE');
   });
 
-  it('API-09 a valid request reaches the Phase 03 boundary and writes nothing', async () => {
+  it('API-09 a valid request awaits confirmation and changes nothing in either system', async () => {
     const res = await app.inject({ method: 'POST', url: '/v1/address-change-requests', headers: auth, payload: valid });
-    expect(res.statusCode).toBe(501);
-    expectEnvelope(res, 'NOT_IMPLEMENTED');
-    const { rows } = await pool.query('SELECT count(*)::int AS n FROM ledger.operations');
+    expect(res.statusCode).toBe(202);
+    expect(res.json()).toMatchObject({ status: 'NEEDS_CONFIRMATION', customer_status: 'pending', confirmation: { token: expect.any(String) } });
+    const { rows } = await pool.query(`SELECT (SELECT count(*)::int FROM order_svc.address_mutations) + (SELECT count(*)::int FROM carrier_svc.address_mutations) AS n`);
     expect(rows[0].n).toBe(0);
   });
 

@@ -24,4 +24,4 @@ Option 3. Idempotency keys are scoped per customer, so different customers can n
 - An operation stuck in `PENDING_RECONCILIATION` blocks new changes to that order until reconciled or escalated. This is intentional.
 
 ## Reversal trigger
-Revisit if the partial index blocks a legitimate flow, such as a separately authorized recovery that needs a second operation while the first is in manual review, or if fingerprinting rejects requests that differ only in non-semantic fields such as `message`. Whether `message` belongs in the fingerprint is decided in Phase 03.
+Revisit if the partial index blocks a legitimate flow, such as a separately authorized recovery that needs a second operation while the first is in manual review, or if fingerprinting rejects requests that differ only in non-semantic fields such as `message`. Whether `message` belongs in the fingerprint is decided in Phase 03. **Resolved:** it is excluded ([ADR-0009 §10](ADR-0009-deterministic-workflow-worker-and-recovery.md)).

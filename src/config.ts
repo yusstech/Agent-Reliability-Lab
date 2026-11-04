@@ -2,12 +2,34 @@ export interface Config {
   databaseUrl: string;
   port: number;
   nodeEnv: string;
+  orderServiceUrl: string;
+  carrierServiceUrl: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const databaseUrl = env.DATABASE_URL;
   if (!databaseUrl) throw new Error('DATABASE_URL is required (copy .env.example to .env)');
-  return { databaseUrl, port: parsePort(env, 'PORT', 3000), nodeEnv: env.NODE_ENV ?? 'development' };
+  return {
+    databaseUrl,
+    port: parsePort(env, 'PORT', 3000),
+    nodeEnv: env.NODE_ENV ?? 'development',
+    orderServiceUrl: parseHttpUrl(env, 'ORDER_SERVICE_URL', `http://127.0.0.1:${parsePort(env, 'ORDER_SERVICE_PORT', 3101)}`),
+    carrierServiceUrl: parseHttpUrl(env, 'CARRIER_SERVICE_URL', `http://127.0.0.1:${parsePort(env, 'CARRIER_SERVICE_PORT', 3102)}`),
+  };
+}
+
+/** Reads an http(s) base URL; unset or empty means the default. */
+export function parseHttpUrl(env: NodeJS.ProcessEnv, name: string, fallback: string): string {
+  const raw = env[name];
+  if (raw === undefined || raw === '') return fallback;
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error(`${name} must be an http(s) URL`);
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error(`${name} must be an http(s) URL`);
+  return raw.replace(/\/$/, '');
 }
 
 /** Reads a TCP port from the environment; unset or empty means the default. */

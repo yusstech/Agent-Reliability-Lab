@@ -18,7 +18,9 @@
     "test": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run",
     "start:order": "node --env-file-if-exists=.env src/providers/server.ts order",
     "start:carrier": "node --env-file-if-exists=.env src/providers/server.ts carrier",
-    "traces": "node --env-file-if-exists=.env scripts/fault-traces.ts"
+    "traces": "node --env-file-if-exists=.env scripts/fault-traces.ts",
+    "start:worker": "node --env-file-if-exists=.env src/workflow/worker-server.ts",
+    "traces:workflow": "node --env-file-if-exists=.env scripts/workflow-traces.ts"
   },
   "dependencies": {
     "fastify": "5.12.8",

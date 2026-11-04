@@ -1,6 +1,7 @@
 import { buildApp } from './app.ts';
 import { assertNotProduction, loadConfig } from './config.ts';
 import { createPool } from './db/pool.ts';
+import { createProviders } from './workflow/adapters.ts';
 
 const config = loadConfig();
 assertNotProduction(config.nodeEnv, 'the API (mock authentication)');
@@ -8,6 +9,10 @@ assertNotProduction(config.nodeEnv, 'the API (mock authentication)');
 const pool = createPool(config.databaseUrl);
 const app = buildApp({
   pool,
+  providers: createProviders({
+    orderUrl: config.orderServiceUrl,
+    carrierUrl: config.carrierServiceUrl,
+  }),
   logger: { level: 'info', redact: ['req.headers.authorization'] },
 });
 

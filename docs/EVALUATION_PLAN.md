@@ -45,6 +45,7 @@ Design rules:
 - **B0's tools are realistic, not naive.** They are what a typical team exposes: customer-scoped provider APIs, so I1 and I2 come free, as with any order API keyed to a session.
 - **B3 enforces I9/I12 through a `report_to_customer(status, message)` tool.** The tool refuses `status=completed` unless the verifier confirms both systems. I10 and I11 stay with the model even at B3, so the top rung still measures the model's judgement on unknowns.
 - **C** follows the Action-Selector pattern (Beurer-Kellner et al. 2025). The model maps a message to one typed proposal or a clarification request, and never sees tool results. Its customer message is rendered from the ledger status.
+- **`expected_version` belongs to I8.** Phases 02 and 03 showed that a write carrying the expected version can't be applied twice, even when the provider ignores idempotency keys (traces P02-05, P03-04). At **B0 and B1** the write tools *accept* an optional `expected_version`, and only the model decides whether to send it. From **B2** up, the tool reads the entity and sends it itself. This is fixed here so the ladder can't silently give one rung the strongest guard.
 - **Tool annotations.** Mock tools declare MCP-style `readOnlyHint`, `destructiveHint` and `idempotentHint`, which are truthful per rung. Whether the model behaves consistently with them is logged.
 
 ## 2. Pre-registered hypotheses

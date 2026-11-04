@@ -15,6 +15,19 @@ export const AddressChangeRequestSchema = z.strictObject({
 });
 export type AddressChangeRequest = z.infer<typeof AddressChangeRequestSchema>;
 
+/** Consent is a server-issued token, never a boolean (ADR-0009 §9). */
+export const ConfirmBodySchema = z.strictObject({
+  confirmation_token: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/, 'must be the token issued with the request'),
+});
+
+export const OperationParamsSchema = z.strictObject({
+  id: z.string().regex(/^op_[a-z0-9]{1,40}$/, 'must look like op_<id>'),
+});
+
+export const InterpretBodySchema = z.strictObject({
+  message: z.string().min(1).max(1000),
+});
+
 function toDetails(error: z.ZodError, input: unknown): ErrorDetail[] {
   const details: ErrorDetail[] = [];
   for (const issue of error.issues) {

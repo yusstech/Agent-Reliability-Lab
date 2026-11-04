@@ -21,6 +21,7 @@ export function buildOrderService(options: ProviderOptions) {
       actor: {
         header: 'x-acting-customer-id',
         pattern: /^cus_[a-z0-9]{1,32}$/,
+        ownerColumn: 'customer_id',
         // Not-owned orders are indistinguishable from missing ones (404).
         canSee: (row, actor) => row.customer_id === actor,
       },
