@@ -1,8 +1,8 @@
 # Phase 03: Deterministic Baseline (Variant A)
 
-- **Status:** Tested. All done-when criteria pass. The gate is signed off when this branch is merged and the commit is recorded below.
+- **Status:** **Passed** (2026-11-04)
 - **Dates:** 2026-11-04 → 2026-11-04
-- **Commit at gate:** not yet merged (branch `phase-03-deterministic`)
+- **Commit at gate:** `50f784a` (merge of [PR #2](https://github.com/yusstech/Agent-Reliability-Lab/pull/2)). The merged `main` was re-verified from an empty database: 16 files, 125 tests passed.
 
 ## 1. Goal / research value
 Variant A is the comparison point for everything model-based. It shows how far ordinary software gets on the study's question: can the system *know* an address change happened in both systems, and tell the customer the truth, under timeouts, crashes, duplicates and concurrent changes? If A is weak, any later "agents are worse" finding is uninformative. So A is built as well as the spec allows.
@@ -150,7 +150,7 @@ npm run traces:workflow    # 10 traces; byte-identical on regeneration (TR-04)
 - **The rule-based reader knows three label families** (home, office, parents), and is evaluated only by unit tests until the Phase 05 language set.
 
 ## 8. Outcome / next decision
-All done-when criteria pass. **Next, Phase 04:** turn this into a falsifiable experiment. That means:
+All done-when criteria pass, and the gate is **signed off as Passed** at `50f784a`. **Next, Phase 04:** turn this into a falsifiable experiment. That means:
 - the seeded R-dev dataset with structured ground truth, including the expected customer status;
 - a runner that exports `events.jsonl`, `cases.csv`, `summary.json` and `manifest.json`;
 - the claim-accuracy, procedure and per-invariant metrics;

@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phases 01 and 02 have passed their gates; Phase 03 (variant A, the deterministic baseline) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 125 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phases 01–03 have passed their gates, including variant A, the deterministic baseline** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 125 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 
