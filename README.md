@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phases 01 and 02 have passed their gates; Phase 03 (variant A, the deterministic baseline) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 116 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phases 01 and 02 have passed their gates; Phase 03 (variant A, the deterministic baseline) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 125 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 
@@ -30,7 +30,7 @@ The primary metric is **claim accuracy**: whether what the customer was told mat
 | Mock server-side identity (hashed session tokens) | Tested | API-03…06 |
 | Strict request validation with a stable error envelope | Tested | VA-01…06, API-07…10 |
 | `GET /health` | Tested | API-01…02 |
-| Variant A end to end: request validation, one-time consent token, durable ledger, leased and fenced worker, reconciliation, compensation, independent verifier, truthful customer status | Tested | RQ-01…10, CF-01…04, WK-01…14, [10 golden workflow traces](docs/PHASES/evidence/phase-03-workflow-traces.md) |
+| Variant A end to end: request validation, one-time consent token, durable ledger, leased and fenced worker, reconciliation, compensation, independent verifier, truthful customer status | Tested | RQ-01…11, CF-01…05, WK-01…20, [10 golden workflow traces](docs/PHASES/evidence/phase-03-workflow-traces.md) |
 | Rule-based intent layer (variant A's language baseline) | Tested (unit) | IN-01…06 |
 | Independent order and carrier services: separate DB roles, append-only mutation logs, idempotency on or off, all 8 spec fault modes | Tested | PV-01…05, PB-01…07, FD-01…03, [12 golden fault traces](docs/PHASES/evidence/phase-02-fault-traces.md) |
 | 50-case evaluation, metrics, results | Not implemented (Phase 04) | — |
@@ -49,7 +49,7 @@ npm run db:up            # Postgres 16 on 127.0.0.1:54329
 npm run migrate          # → migrations applied: 0001_foundation
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
-npm test                 # → Tests 116 passed (116); resets its own arl_test database
+npm test                 # → Tests 125 passed (125); resets its own arl_test database
 npm run traces           # regenerates the Phase 02 fault-trace evidence
 npm run traces:workflow  # regenerates the Phase 03 workflow-trace evidence
 npm start                # API on http://127.0.0.1:3000

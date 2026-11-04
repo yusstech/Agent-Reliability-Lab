@@ -77,7 +77,11 @@ export async function applyTransition(
   reasonCode: string,
   evidence: TransitionEvidence = {},
 ): Promise<OperationRow> {
-  const visited = (await listEvents(client, op.id)).flatMap((e) => (e.to_status ? [e.to_status] : []));
+  const { rows: history } = await client.query<{ to_status: OperationStatus }>(
+    'SELECT to_status FROM ledger.operation_events WHERE operation_id = $1 AND to_status IS NOT NULL ORDER BY sequence',
+    [op.id],
+  );
+  const visited = history.map((h) => h.to_status);
   assertTransition({
     from: op.status,
     to,

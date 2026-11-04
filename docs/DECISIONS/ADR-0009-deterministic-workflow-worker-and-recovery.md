@@ -30,8 +30,11 @@ Phase 02 showed that `expected_version` blocks duplicate writes even when keys a
 A worker claims the oldest claimable operation with `UPDATE … WHERE id = (SELECT … FOR UPDATE SKIP LOCKED LIMIT 1)`, setting a random `lease_token` and an expiry (default 30 s). Every write the worker makes afterwards is conditional on `lease_token` still matching. A worker whose lease expired and was re-claimed finds its updates affect zero rows, stops, and never records a result.
 - **Worker-level duplicate delivery** (the spec's `DUPLICATE_DELIVERY`) is two workers or deliveries racing for one operation. It is absorbed by `SKIP LOCKED` and fencing.
 - **A provider call from a fenced-out worker** can still land. Decision 4 makes that harmless.
+- **Stale decisions are discarded.** If the request path changes an operation's status while a worker holds it (for example, expiring its confirmation), the worker's decision was made for a state that no longer exists. It is dropped and the lease released (WK-17).
 
 ### 3. Every write step reads first
+*(Amended after the PR #2 review.)* An order already at the target address counts as **this operation's change only if one of its own writes may have landed**. If someone else made the same change, the operation proceeds, but compensation will **never revert it** (`ORDER_CHANGE_NOT_OURS_TO_REVERT`, WK-18).
+
 Before writing, the step reads the provider entity:
 - **Already at the target address:** the write is skipped. This is how recovery after a crash or timeout avoids re-applying it.
 - **Order no longer eligible, or its version moved since validation:** the request is revalidated (I8, against time-of-check/time-of-use changes). If none of our writes has landed, it becomes `REJECTED`.
@@ -60,15 +63,25 @@ If the carrier definitively refuses after the order was changed, the operation m
 ### 7. Verification is independent and repeatable
 The verifier reads both providers fresh. `COMPLETED` requires both to show the target, and it is the only path to `completed` for the customer (I9, I12). A mismatch is retried with backoff, because the read may be stale (P02-07). A mismatch that persists past the step budget becomes `NEEDS_MANUAL_REVIEW` with reason `VERIFICATION_MISMATCH_UNRESOLVED`.
 
-### 8. A step budget, then escalation
-Each state allows `maxStepAttempts` retries (default 5), with backoff `min(base·2ⁿ, cap)`. When the budget runs out, the operation goes to `NEEDS_MANUAL_REVIEW`, never to `REJECTED` and never to "assume it worked".
+### 8. Bounded effort, then escalation
+Three budgets, each ending in `NEEDS_MANUAL_REVIEW` (or `REJECTED` before execution starts, when nothing can have been written). Never "assume it worked".
 
-A definitive rejection is treated as `REJECTED` only when **no earlier write for this operation was dispatched to that provider**. Otherwise it escalates, because a stale read can't prove the earlier write didn't land.
+| Budget | Default | Bounds |
+| --- | --- | --- |
+| `maxStepAttempts` per state | 5 | Retries within one state, with backoff `min(base·2ⁿ, cap)` |
+| `maxWriteAttempts` per provider | 3 | Write ↔ reconcile cycles. Transitions reset the per-state counter, so without this cap a provider that never accepts the write would loop forever (WK-15) |
+| `maxTotalSteps` per operation | 50 | A backstop for any cycle or **poison step**. A step that throws is recorded as `STEP_FAILED` and counted against the budget, never retried silently forever (WK-16) |
+
+**When a rejection is safe.** `REJECTED` (nothing persisted) is chosen only when no write this operation dispatched is still *possibly applied*. A dispatch closes in one of two ways:
+- that request was definitively refused; or
+- the entity is observed at a version **beyond the one the dispatch expected**, without our address. Every write carries `expected_version`, so that request can never commit afterwards, and the current state doesn't contain it (WK-19 shows the late request being refused).
+
+A status answer of `MUTATION_NOT_FOUND` closes nothing by itself, because a timed-out request could still be in flight. It only justifies a version-guarded resend. Until the version has moved past every open write, a rejection escalates instead (WK-20).
 
 ### 9. Consent is a server-issued, single-display token
 Creating an operation issues a random 128-bit confirmation token, shown **once** in the `202` response and stored only as a SHA-256 hash with an expiry (default 15 min). `POST /v1/operations/:id/confirm` requires that token from the owning customer. A body flag such as `confirmed: true` is not accepted (I5).
 - **Expiry:** an expired challenge moves to `REJECTED (CONFIRMATION_EXPIRED)`. A worker sweep does this, and so does the request path when the expired challenge blocks a new request for the same order.
-- **Replays:** replaying the creation request returns the operation without the token.
+- **Replays:** replaying the creation request, which only the owning customer can do, **issues a fresh token and revokes the previous one**, without extending the expiry. A client that lost the `202` can still confirm (RQ-11).
 
 ### 10. The idempotency fingerprint covers `order_id` and `new_address_id`, not `message`
 `message` is free text with no effect on execution. Including it would reject harmless retries in which a client re-renders the text. This follows the Stripe caution about hashing request bodies.

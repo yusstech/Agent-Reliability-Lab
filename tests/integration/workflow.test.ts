@@ -127,6 +127,106 @@ describe('variant A end to end', () => {
   });
 });
 
+describe('bounded behaviour (code review of PR #2)', () => {
+  it('WK-15 a provider that never accepts the write escalates within the write budget instead of looping', async () => {
+    await s.faults('order', { rules: [{ fault: 'TIMEOUT_BEFORE_WRITE', target: '*', times: null, params: { hang_ms: 1500 } }] });
+    const id = await s.confirmed();
+    const steps = await s.worker({ maxWriteAttempts: 3 }).runUntilIdle({ maxSteps: 200 });
+    expect(steps).toBeLessThan(30);
+    const { view, truth } = await claimMatchesTruth(id);
+    expect(view).toMatchObject({ status: 'NEEDS_MANUAL_REVIEW', reason: 'ORDER_WRITE_ATTEMPTS_EXHAUSTED' });
+    expect((await s.events(id)).filter((e) => e.step === 'ORDER_WRITE_DISPATCHED')).toHaveLength(3);
+    expect(truth).toMatchObject({ order_mutations: 0, carrier_mutations: 0 });
+  });
+
+  it('WK-16 a step that fails every time is recorded and escalated, not retried forever', async () => {
+    const id = await s.confirmed();
+    const broken = s.worker({
+      maxStepAttempts: 3,
+      crashAt: (p, op) => {
+        if (p === 'after_claim' && op.status === 'UPDATING_ORDER') throw new TypeError('unreadable provider response');
+        return false;
+      },
+    });
+    await broken.runUntilIdle({ maxSteps: 50 });
+    const view = await s.view(id);
+    expect(view).toMatchObject({ status: 'NEEDS_MANUAL_REVIEW', reason: 'STEP_FAILED_UNRESOLVED' });
+    expect((await s.events(id)).filter((e) => e.step === 'STEP_FAILED').length).toBeGreaterThan(0);
+    expect(await s.truth()).toMatchObject({ order_mutations: 0, carrier_mutations: 0 });
+  });
+
+  it('WK-17 a decision made for a state the request path has since changed is discarded', async () => {
+    const short = await startStack({ confirmationTtlMs: 1 });
+    try {
+      await short.reset();
+      const c = (await short.submit({ order_id: target.order_id, new_address_id: T, idempotency_key: 'req_wk17_0001' })).json();
+      await new Promise((r) => setTimeout(r, 20));
+      const racing = short.worker({
+        crashAt: async (p) => {
+          // While the worker holds the claim, a new request expires the same challenge.
+          if (p === 'after_claim') await short.submit({ order_id: target.order_id, new_address_id: T, idempotency_key: 'req_wk17_0002' });
+          return false;
+        },
+      });
+      await racing.runOnce(c.operation_id);
+      const events = await short.events(c.operation_id);
+      expect(events.filter((e) => e.to_status === 'REJECTED')).toHaveLength(1);
+      // Discarded cleanly: the stale decision was not attempted and did not count as a failure.
+      expect(events.some((e) => e.step === 'STEP_FAILED')).toBe(false);
+      const row = (await short.pool.query('SELECT lease_token FROM ledger.operations WHERE id = $1', [c.operation_id])).rows[0];
+      expect(row.lease_token).toBeNull();
+    } finally {
+      await short.close();
+    }
+  });
+
+  it('WK-18 compensation never reverts a change this operation did not make', async () => {
+    const id = await s.confirmed();
+    // Another actor moves the order to the same address before the worker runs.
+    await s.providers.order.change(target.customer_id, target.order_id, { address_id: T, idempotency_key: 'someone_else_1', expected_version: 1 });
+    await s.faults('carrier', { rules: [{ fault: 'PERMANENT_REJECTION', target: '*' }] });
+    await s.worker().runUntilIdle();
+    const { view, truth } = await claimMatchesTruth(id);
+    expect(view).toMatchObject({ status: 'NEEDS_MANUAL_REVIEW', reason: 'ORDER_CHANGE_NOT_OURS_TO_REVERT' });
+    expect(truth).toMatchObject({ order: { address_id: T }, order_mutations: 1, carrier_mutations: 0 });
+  });
+
+  it('WK-19 after a timeout, REJECTED is allowed only once the version has moved past every open write', async () => {
+    // The write times out; status says not found; the worker resends; the order ships (v2).
+    // The timed-out request expected v1, so it can never land now: not_changed is truthful.
+    await s.faults('order', {
+      rules: [
+        { fault: 'TIMEOUT_BEFORE_WRITE', target: '*', params: { hang_ms: 1500 } },
+        { fault: 'CONCURRENT_STATUS_CHANGE', target: '*', after: 2 },
+      ],
+    });
+    const id = await s.confirmed();
+    await s.worker().runUntilIdle();
+    const { view, truth } = await claimMatchesTruth(id);
+    expect(view).toMatchObject({ status: 'REJECTED', customer_status: 'not_changed', reason: 'ORDER_NO_LONGER_ELIGIBLE' });
+    expect(truth).toMatchObject({ order_mutations: 0, carrier_mutations: 0 });
+    // The argument, demonstrated: the original request, delivered late, is refused.
+    const late = await s.providers.order.change(target.customer_id, target.order_id, { address_id: T, idempotency_key: `${id}_order_v1`, expected_version: 1 });
+    expect(late).toMatchObject({ kind: 'rejected', code: 'VERSION_CONFLICT' });
+  });
+
+  it('WK-20 while the version has not moved, an unresolved timed-out write blocks REJECTED', async () => {
+    // Timeout, then status lookups and reads fail: the write could still land, so the
+    // worker escalates rather than declaring nothing changed.
+    await s.faults('order', {
+      rules: [
+        { fault: 'TIMEOUT_BEFORE_WRITE', target: '*', params: { hang_ms: 1500 } },
+        { fault: 'UNAVAILABLE_STATUS_QUERY', target: '*', on: 'status_query', times: null },
+        { fault: 'UNAVAILABLE_STATUS_QUERY', target: '*', on: 'read', after: 2, times: null },
+      ],
+    });
+    const id = await s.confirmed();
+    await s.worker().runUntilIdle();
+    const { view } = await claimMatchesTruth(id);
+    expect(view.customer_status).toBe('needs_review');
+  });
+});
+
 describe('durability: crashes, duplicate delivery, fencing', () => {
   for (const point of ['after_dispatch_logged', 'after_provider_write'] as const) {
     it(`WK-11 a worker that dies ${point.replaceAll('_', ' ')} is recovered without a second write`, async () => {

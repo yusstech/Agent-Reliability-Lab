@@ -10,8 +10,8 @@ const pool = createPool(config.databaseUrl);
 const worker = new Worker({
   pool,
   providers: createProviders({
-    orderUrl: process.env.ORDER_SERVICE_URL ?? 'http://127.0.0.1:3101',
-    carrierUrl: process.env.CARRIER_SERVICE_URL ?? 'http://127.0.0.1:3102',
+    orderUrl: config.orderServiceUrl,
+    carrierUrl: config.carrierServiceUrl,
   }),
 });
 

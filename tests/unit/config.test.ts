@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SEED, fixtureSeedFromEnv } from '../../fixtures/generate.ts';
-import { assertLocalDatabase, assertNotProduction, parsePort } from '../../src/config.ts';
+import { assertLocalDatabase, assertNotProduction, loadConfig, parsePort } from '../../src/config.ts';
 
 describe('destructive-tool guards', () => {
   it('CF-01 only local database hosts are accepted', () => {
@@ -22,6 +22,14 @@ describe('destructive-tool guards', () => {
     expect(parsePort({ P: '' }, 'P', 3101)).toBe(3101);
     expect(parsePort({ P: '3200' }, 'P', 3101)).toBe(3200);
     for (const bad of ['0', '65536', '31o1', '-1', '3.5', ' 80']) expect(() => parsePort({ P: bad }, 'P', 1), bad).toThrow();
+  });
+
+  it('CF-05 provider URLs default from the ports and are validated', () => {
+    const base = { DATABASE_URL: 'postgres://u:p@localhost/db' };
+    expect(loadConfig(base)).toMatchObject({ orderServiceUrl: 'http://127.0.0.1:3101', carrierServiceUrl: 'http://127.0.0.1:3102' });
+    expect(loadConfig({ ...base, ORDER_SERVICE_PORT: '4101' }).orderServiceUrl).toBe('http://127.0.0.1:4101');
+    expect(loadConfig({ ...base, CARRIER_SERVICE_URL: 'http://carrier.local:9/' }).carrierServiceUrl).toBe('http://carrier.local:9');
+    for (const bad of ['carrier', 'ftp://x', 'javascript:alert(1)']) expect(() => loadConfig({ ...base, ORDER_SERVICE_URL: bad }), bad).toThrow();
   });
 
   it('CF-03 FIXTURE_SEED accepts decimal integers only', () => {

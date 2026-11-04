@@ -13,6 +13,7 @@ import {
   type EventInput,
   type EventRow,
   fenced,
+  LeaseLostError,
   listEvents,
   type OperationRow,
   releaseLease,
@@ -20,8 +21,8 @@ import {
 } from './ledger.ts';
 import { readBothSystems } from './verifier.ts';
 
-/** Points where a test can simulate the process dying (no lease release, no result). */
-export type CrashPoint = 'after_dispatch_logged' | 'after_provider_write';
+/** Points where a test can intervene: after the claim, or where the process could die. */
+export type CrashPoint = 'after_claim' | 'after_dispatch_logged' | 'after_provider_write';
 
 export class SimulatedCrash extends Error {
   constructor(point: CrashPoint) {
@@ -36,6 +37,10 @@ export interface WorkerOptions {
   leaseMs?: number;
   /** Retries per state before escalating to NEEDS_MANUAL_REVIEW. */
   maxStepAttempts?: number;
+  /** Writes dispatched to one provider per operation before escalating (bounds write↔reconcile cycles). */
+  maxWriteAttempts?: number;
+  /** Claims per operation, across all states, before escalating (backstop for any cycle or poison step). */
+  maxTotalSteps?: number;
   /** Delay before retry n (1-based). */
   backoffMs?: (attempt: number) => number;
   /** Test hook: return true to crash at this point. May be async (e.g. to perturb the DB first). */
@@ -61,6 +66,10 @@ const transition = (to: OperationStatus, reason: string, extra: Omit<Extract<Dec
 const retry = (reason: string, events?: EventInput[]): Decision => ({ kind: 'retry', reason, events });
 const escalate = (reason: string, events?: EventInput[]): Decision => transition('NEEDS_MANUAL_REVIEW', reason, { events });
 
+/** Before execution starts nothing can have been written, so giving up is a plain REJECTED. */
+const PRE_EXECUTION: ReadonlySet<OperationStatus> = new Set(['RECEIVED', 'NEEDS_CONFIRMATION', 'QUEUED']);
+const giveUp = (status: OperationStatus): OperationStatus => (PRE_EXECUTION.has(status) ? 'REJECTED' : 'NEEDS_MANUAL_REVIEW');
+
 function outcomeEvent(step: string, outcome: Outcome<unknown>, extra: Partial<EventInput> = {}): EventInput {
   return {
     step,
@@ -76,6 +85,8 @@ export class Worker {
   private readonly providers: Providers;
   private readonly leaseMs: number;
   private readonly maxStepAttempts: number;
+  private readonly maxWriteAttempts: number;
+  private readonly maxTotalSteps: number;
   private readonly backoffMs: (attempt: number) => number;
   private readonly crashAt: WorkerOptions['crashAt'];
 
@@ -84,6 +95,8 @@ export class Worker {
     this.providers = o.providers;
     this.leaseMs = o.leaseMs ?? 30_000;
     this.maxStepAttempts = o.maxStepAttempts ?? 5;
+    this.maxWriteAttempts = o.maxWriteAttempts ?? 3;
+    this.maxTotalSteps = o.maxTotalSteps ?? 50;
     this.backoffMs = o.backoffMs ?? ((n) => Math.min(100 * 2 ** n, 30_000));
     this.crashAt = o.crashAt;
   }
@@ -93,9 +106,22 @@ export class Worker {
     const token = randomUUID();
     const op = await claimNext(this.pool, token, this.leaseMs, operationId);
     if (!op) return false;
-    const events = await listEvents(this.pool, op.id);
-    const decision = await this.step(op, events, token);
-    await this.apply(op.id, token, decision);
+    if (op.attempts > this.maxTotalSteps) {
+      await this.apply(op, token, transition(giveUp(op.status), 'STEP_BUDGET_EXHAUSTED'));
+      return true;
+    }
+    try {
+      await this.crash('after_claim', op);
+      const events = await listEvents(this.pool, op.id);
+      const decision = await this.step(op, events, token);
+      await this.apply(op, token, decision);
+    } catch (err) {
+      // A simulated death or a lost lease must look exactly like the real thing.
+      if (err instanceof SimulatedCrash || err instanceof LeaseLostError) throw err;
+      // Anything else is a failed step: record it and count it against the step budget,
+      // so a poison operation escalates instead of being retried forever.
+      await this.apply(op, token, retry('STEP_FAILED', [{ step: 'STEP_FAILED', reason_code: 'STEP_FAILED', error_code: (err as Error).name.toUpperCase().slice(0, 64) }]));
+    }
     return true;
   }
 
@@ -106,8 +132,14 @@ export class Worker {
     return steps;
   }
 
-  private async apply(operationId: string, token: string, d: Decision): Promise<void> {
-    await fenced(this.pool, operationId, token, async (client, op) => {
+  private async apply(claimed: OperationRow, token: string, d: Decision): Promise<void> {
+    await fenced(this.pool, claimed.id, token, async (client, op) => {
+      if (op.status !== claimed.status) {
+        // The request path moved this operation while we worked (e.g. expired its
+        // confirmation). Our decision was made for a state that no longer exists.
+        await releaseLease(client, op.id, null);
+        return;
+      }
       for (const e of d.events ?? []) await appendEvent(client, op.id, e);
       if (d.kind === 'transition') {
         await applyTransition(client, op, d.to, d.reason, d.evidence);
@@ -121,7 +153,7 @@ export class Worker {
       }
       const attempt = op.step_attempts + 1;
       if (attempt >= this.maxStepAttempts) {
-        await applyTransition(client, op, 'NEEDS_MANUAL_REVIEW', `${d.reason}_UNRESOLVED`.slice(0, 64), { detail: { attempts: attempt } });
+        await applyTransition(client, op, giveUp(op.status), `${d.reason}_UNRESOLVED`.slice(0, 64), { detail: { attempts: attempt } });
         await releaseLease(client, op.id, null);
         return;
       }
@@ -157,43 +189,58 @@ export class Worker {
       case 'VERIFYING':
         return this.verify(op);
       case 'COMPENSATING':
-        return this.compensate(op, token);
+        return this.compensate(op, events, token);
       default:
         // Claimed a status that is not runnable (should be impossible given claimNext).
         return escalate('UNEXPECTED_STATUS');
     }
   }
 
+  private dispatches(events: EventRow[], provider: Provider): number {
+    return events.filter((e) => e.step === WRITE_DISPATCHED[provider]).length;
+  }
+
   /**
-   * True if an earlier write to this provider may have landed: it was dispatched and its
-   * outcome was never shown to be "not applied" (a definitive rejection of that request,
-   * or reconciliation finding no mutation for its key). Only then is REJECTED unsafe.
+   * True if an earlier write to this provider may have landed, or may still land. A
+   * dispatch stays open until one of two things closes it:
+   *  - that request was definitively refused; or
+   *  - the entity is observed at a version beyond the one the dispatch expected, without
+   *    our address. Every write carries expected_version, so such a request can never
+   *    commit from then on, and the current state does not contain it.
+   * A status query answering MUTATION_NOT_FOUND closes nothing on its own: a timed-out
+   * request can still be in flight. It only justifies a (version-guarded) resend.
    */
-  private possiblyApplied(events: EventRow[], provider: Provider): boolean {
-    const open = new Set<string>();
+  private possiblyApplied(events: EventRow[], provider: Provider, observed?: { version: number; atTarget: boolean }): boolean {
+    const open = new Map<string, number>();
     for (const e of events) {
-      const key = (e.detail as { key?: string } | null)?.key;
-      if (!key) continue;
-      if (e.step === WRITE_DISPATCHED[provider]) open.add(key);
+      const d = e.detail as { key?: string; expected_version?: number } | null;
+      if (!d?.key) continue;
+      if (e.step === WRITE_DISPATCHED[provider]) open.set(d.key, d.expected_version ?? 0);
       const refused = (e.step === 'ORDER_WRITE_RESULT' || e.step === 'CARRIER_WRITE_RESULT') && e.result === 'rejected';
-      const notFound = e.step === 'RECONCILE_STATUS_QUERY' && e.error_code === 'MUTATION_NOT_FOUND';
-      if (refused || notFound) open.delete(key);
+      if (refused) open.delete(d.key);
+    }
+    if (observed && !observed.atTarget) {
+      for (const [key, expected] of open) if (observed.version > expected) open.delete(key);
     }
     return open.size > 0;
   }
 
   private async updateOrder(op: OperationRow, events: EventRow[], token: string): Promise<Decision> {
-    const prior = this.possiblyApplied(events, 'order');
     const read = await this.providers.order.get(op.customer_id, op.order_id);
     if (read.kind === 'unknown') return retry('ORDER_READ_UNAVAILABLE', [outcomeEvent('ORDER_READ', read)]);
     if (read.kind === 'rejected') {
       const e = [outcomeEvent('ORDER_READ', read)];
-      return prior ? escalate('ORDER_UNAVAILABLE_AFTER_WRITE', e) : transition('REJECTED', 'ORDER_NOT_FOUND', { events: e });
+      return this.possiblyApplied(events, 'order') ? escalate('ORDER_UNAVAILABLE_AFTER_WRITE', e) : transition('REJECTED', 'ORDER_NOT_FOUND', { events: e });
     }
     const order = read.body.order;
+    const prior = this.possiblyApplied(events, 'order', { version: order.version, atTarget: order.address_id === op.target_address_id });
     const seen = { step: 'ORDER_READ', reason_code: 'PROVIDER_OK', result: 'ok', detail: { address_id: order.address_id, version: order.version, status: order.status } };
 
-    if (order.address_id === op.target_address_id) return transition('UPDATING_CARRIER', 'ORDER_AT_TARGET', { events: [seen] });
+    if (order.address_id === op.target_address_id) {
+      // Someone else may have made the same change. That still satisfies the customer, but
+      // compensation must then never revert it (see compensate()).
+      return transition('UPDATING_CARRIER', prior ? 'ORDER_AT_TARGET' : 'ORDER_AT_TARGET_NOT_BY_US', { events: [seen] });
+    }
     if (!isEligibleForAddressChange(order.status)) {
       return prior ? escalate('ORDER_INELIGIBLE_AFTER_WRITE', [seen]) : transition('REJECTED', 'ORDER_NO_LONGER_ELIGIBLE', { events: [seen] });
     }
@@ -201,6 +248,7 @@ export class Worker {
       return prior ? escalate('ORDER_CHANGED_AFTER_WRITE', [seen]) : transition('REJECTED', 'ORDER_CHANGED_CONCURRENTLY', { events: [seen] });
     }
 
+    if (this.dispatches(events, 'order') >= this.maxWriteAttempts) return escalate('ORDER_WRITE_ATTEMPTS_EXHAUSTED', [seen]);
     const body = { address_id: op.target_address_id, idempotency_key: `${op.id}_order_v${order.version}`, expected_version: order.version };
     await this.logDispatch(op, token, WRITE_DISPATCHED.order, { provider: 'order', key: body.idempotency_key, expected_version: body.expected_version });
     const write = await this.providers.order.change(op.customer_id, op.order_id, body);
@@ -219,14 +267,14 @@ export class Worker {
   private async updateCarrier(op: OperationRow, events: EventRow[], token: string): Promise<Decision> {
     const ref = op.carrier_ref;
     if (!ref) return escalate('CARRIER_REFERENCE_MISSING');
-    const prior = this.possiblyApplied(events, 'carrier');
     const read = await this.providers.carrier.get(ref);
     if (read.kind === 'unknown') return retry('CARRIER_READ_UNAVAILABLE', [outcomeEvent('CARRIER_READ', read)]);
     if (read.kind === 'rejected') {
       const e = [outcomeEvent('CARRIER_READ', read)];
-      return prior ? escalate('SHIPMENT_UNAVAILABLE_AFTER_WRITE', e) : transition('COMPENSATING', 'SHIPMENT_NOT_FOUND', { events: e });
+      return this.possiblyApplied(events, 'carrier') ? escalate('SHIPMENT_UNAVAILABLE_AFTER_WRITE', e) : transition('COMPENSATING', 'SHIPMENT_NOT_FOUND', { events: e });
     }
     const shipment = read.body.shipment;
+    const prior = this.possiblyApplied(events, 'carrier', { version: shipment.version, atTarget: shipment.address_id === op.target_address_id });
     const seen = { step: 'CARRIER_READ', reason_code: 'PROVIDER_OK', result: 'ok', detail: { address_id: shipment.address_id, version: shipment.version, status: shipment.status } };
 
     if (shipment.address_id === op.target_address_id) return transition('VERIFYING', 'CARRIER_AT_TARGET', { events: [seen] });
@@ -234,6 +282,7 @@ export class Worker {
       return prior ? escalate('SHIPMENT_DISPATCHED_AFTER_WRITE', [seen]) : transition('COMPENSATING', 'SHIPMENT_DISPATCHED', { events: [seen] });
     }
 
+    if (this.dispatches(events, 'carrier') >= this.maxWriteAttempts) return escalate('CARRIER_WRITE_ATTEMPTS_EXHAUSTED', [seen]);
     const body = { address_id: op.target_address_id, idempotency_key: `${op.id}_carrier_v${shipment.version}`, expected_version: shipment.version };
     await this.logDispatch(op, token, WRITE_DISPATCHED.carrier, { provider: 'carrier', key: body.idempotency_key, expected_version: body.expected_version });
     const write = await this.providers.carrier.change(ref, body);
@@ -284,9 +333,13 @@ export class Worker {
   }
 
   /** ADR-0009 §6: version-guarded revert of the order, then proof both systems are at the original. */
-  private async compensate(op: OperationRow, token: string): Promise<Decision> {
+  private async compensate(op: OperationRow, events: EventRow[], token: string): Promise<Decision> {
     const original = op.original_address_id;
     if (!original) return escalate('ORIGINAL_ADDRESS_MISSING');
+    // Only undo what this operation did. If none of our order writes can have landed, the
+    // order's current address is someone else's decision.
+    const ours = this.possiblyApplied(events, 'order') || events.some((e) => e.step === 'ORDER_COMPENSATION_DISPATCHED');
+    if (!ours) return escalate('ORDER_CHANGE_NOT_OURS_TO_REVERT');
     const read = await this.providers.order.get(op.customer_id, op.order_id);
     if (read.kind === 'unknown') return retry('COMPENSATION_READ_UNAVAILABLE', [outcomeEvent('COMPENSATION_ORDER_READ', read)]);
     if (read.kind === 'rejected') return escalate('COMPENSATION_ORDER_UNAVAILABLE', [outcomeEvent('COMPENSATION_ORDER_READ', read)]);
@@ -294,10 +347,13 @@ export class Worker {
     const seen = { step: 'COMPENSATION_ORDER_READ', reason_code: 'PROVIDER_OK', result: 'ok', detail: { address_id: order.address_id, version: order.version } };
 
     if (order.address_id === original) {
-      const v = await readBothSystems(this.providers, op, original);
-      if (v.kind === 'matches') return transition('REJECTED', 'CHANGE_REVERSED_AFTER_CARRIER_REJECTION', { evidence: { compensation: v.evidence }, events: [seen] });
-      if (v.kind === 'unavailable') return retry('COMPENSATION_VERIFY_UNAVAILABLE', [seen]);
-      return escalate('COMPENSATION_CARRIER_MISMATCH', [seen, { step: 'COMPENSATION_VERIFY_READ', reason_code: 'MISMATCH', result: 'differs', detail: { ...v.evidence } }]);
+      const carrier = op.carrier_ref ? await this.providers.carrier.get(op.carrier_ref) : undefined;
+      if (!carrier || carrier.kind !== 'ok') return retry('COMPENSATION_VERIFY_UNAVAILABLE', [seen]);
+      const evidence = { orderAddressId: order.address_id, carrierAddressId: carrier.body.shipment.address_id };
+      if (evidence.carrierAddressId === original) {
+        return transition('REJECTED', 'CHANGE_REVERSED_AFTER_CARRIER_REJECTION', { evidence: { compensation: evidence }, events: [seen] });
+      }
+      return escalate('COMPENSATION_CARRIER_MISMATCH', [seen, { step: 'COMPENSATION_VERIFY_READ', reason_code: 'MISMATCH', result: 'differs', detail: { ...evidence } }]);
     }
     if (order.address_id !== op.target_address_id) return escalate('ORDER_CHANGED_DURING_COMPENSATION', [seen]);
 

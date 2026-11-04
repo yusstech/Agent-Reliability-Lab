@@ -72,13 +72,23 @@ describe('request path: authorization and eligibility (I1–I4)', () => {
 });
 
 describe('request path: idempotency and concurrency (I6, I7)', () => {
-  it('RQ-07 the same key and payload returns the same operation, without re-issuing the token', async () => {
+  it('RQ-07 the same key and payload returns the same operation; message is not part of the fingerprint', async () => {
     const first = (await s.submit(body())).json();
     const again = await s.submit(body({ message: 'different wording is not part of the fingerprint' }));
     expect(again.statusCode).toBe(200);
     expect(again.json().operation_id).toBe(first.operation_id);
-    expect(again.json().confirmation).toBeUndefined();
     expect((await s.pool.query('SELECT count(*)::int AS n FROM ledger.operations')).rows[0].n).toBe(1);
+  });
+
+  it('RQ-11 a client that lost the 202 replays and gets a fresh token; the old one stops working', async () => {
+    const first = (await s.submit(body())).json();
+    const again = (await s.submit(body())).json();
+    expect(again.confirmation.token).not.toBe(first.confirmation.token);
+    expect(again.confirmation.expires_at).toBe(first.confirmation.expires_at); // no extension
+    expect((await s.confirm(first.operation_id, first.confirmation.token)).json().error.code).toBe('CONFIRMATION_INVALID');
+    expect((await s.confirm(first.operation_id, again.confirmation.token)).json().status).toBe('QUEUED');
+    // Once confirmed, a replay issues nothing new.
+    expect((await s.submit(body())).json().confirmation).toBeUndefined();
   });
 
   it('RQ-08 the same key with a different payload is refused', async () => {
@@ -133,6 +143,21 @@ describe('consent (I5)', () => {
       expect(res.statusCode).toBe(410);
       expect((await short.view(c.operation_id)).customer_status).toBe('not_changed');
       expect((await short.submit(body({ idempotency_key: 'req_rq_after' }))).statusCode).toBe(202);
+    } finally {
+      await short.close();
+    }
+  });
+
+  it('CF-05 confirming after the worker swept the challenge answers 410, like before the sweep', async () => {
+    const short = await startStack({ confirmationTtlMs: 1 });
+    try {
+      await short.reset();
+      const c = (await short.submit(body())).json();
+      await new Promise((r) => setTimeout(r, 20));
+      await short.worker().runUntilIdle();
+      const res = await short.confirm(c.operation_id, c.confirmation.token);
+      expect(res.statusCode).toBe(410);
+      expect(res.json().error.code).toBe('CONFIRMATION_EXPIRED');
     } finally {
       await short.close();
     }

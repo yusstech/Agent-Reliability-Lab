@@ -111,7 +111,7 @@ export function buildApp({ pool, providers, logger = false, requests = {} }: App
     v1.post('/address-change-requests', async (request, reply) => {
       const input = parseBody(AddressChangeRequestSchema, request.body);
       const result = await submitAddressChange(deps, identityOf(request), input);
-      if (result.kind === 'replayed') return result.operation;
+      if (result.kind === 'replayed') return { ...result.operation, ...(result.confirmation ? { confirmation: result.confirmation } : {}) };
       reply.status(202);
       return {
         ...result.operation,

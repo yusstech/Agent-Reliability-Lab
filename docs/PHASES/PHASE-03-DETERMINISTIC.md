@@ -25,7 +25,7 @@ Variant A is the comparison point for everything model-based. It shows how far o
 - the 50-case dataset, metrics and run exports (Phase 04);
 - model variants (Phase 05);
 - lease heartbeats (ADR-0009 reversal trigger);
-- re-issuing a lost confirmation token (see §7).
+- an operator workflow for `NEEDS_MANUAL_REVIEW` cases.
 
 ## 3. Architecture & implementation
 
@@ -102,7 +102,7 @@ It also resolves two items left open since Phase 01:
 ```
 npm run db:down && npm run db:up && npm run migrate && npm run seed
 npm run typecheck          # exit 0
-npm test                   # 16 files, 116 tests passed (~13 s)
+npm test                   # 16 files, 125 tests passed
 npm run traces:workflow    # 10 traces; byte-identical on regeneration (TR-04)
 ```
 
@@ -126,10 +126,24 @@ npm run traces:workflow    # 10 traces; byte-identical on regeneration (TR-04)
 3. **A racy test (WK-13).** It "stole" the lease with an un-awaited query. The crash hook is now awaitable, the test is deterministic, and it passed three repeated runs.
 4. **A reporting overstatement.** My first trace summary counted `needs_review` as "claim matches truth". It now reports *false claims* exactly as the Evaluation Plan defines them.
 
+**Code review of PR #2 (2026-11-04).** It found 10 issues. 9 were confirmed and fixed, each with a regression test. Each of those tests was run against the pre-fix code: 5 fail there, and WK-17 fails once the specific fix is disabled. The 10th was a sound question that exposed a loosely argued rule, now made exact.
+
+| # | Issue | Resolution | Test |
+| --- | --- | --- | --- |
+| 1 | The write ↔ reconcile cycle never escalated, because transitions reset the retry counter | Cap on writes dispatched per provider | WK-15 |
+| 2 | A step that always throws was retried forever | Recorded as `STEP_FAILED` and counted against the budget; total-step backstop | WK-16 |
+| 3 | A decision computed for an old status was applied after the request path changed it | Discarded when the status changed under the lease | WK-17 (strengthened after a first version proved vacuous) |
+| 4 | An order already at the target counted as "ours" even when someone else changed it, so compensation could revert another actor's change | "Ours" only if one of our writes may have landed; otherwise never revert | WK-18 |
+| 5 | Can a write that timed out and returned "not found" still land after `REJECTED`? | **Not in this design.** Once the order's version moves past the version a write expected, that write can never commit. The rule is now stated exactly (ADR-0009 §8), and "not found" alone closes nothing | WK-19 (late request refused), WK-20 |
+| 6 | A client that lost the `202` could never confirm | An owner replay re-issues the token and revokes the old one | RQ-11 |
+| 7 | A key-race could surface as a 500 | Retryable `409 OPERATION_IN_PROGRESS` | Code path |
+| 8 | Confirming after the sweep returned `409`, not `410` | `410` either way | CF-05 |
+| 9 | Compensation read the order twice; transition history loaded every column | One order read plus a carrier read; history query selects `to_status` only | WK-06 |
+| 10 | Provider URLs bypassed config validation and had duplicated defaults | `loadConfig` with URL validation, defaults derived from the ports | CF-05 (config) |
+
 ## 7. Limitations
-- **Conservative escalation.** When a step budget runs out (default 5 attempts), the operation goes to `NEEDS_MANUAL_REVIEW`, even before any write. For example, WK-10 escalates after the order system is down. This is honest, but it will raise the manual-review rate. Phase 04 measures it.
+- **Conservative escalation.** When any budget runs out (5 retries per state, 3 writes per provider, 50 steps per operation), the operation goes to `NEEDS_MANUAL_REVIEW`. For example, WK-10 escalates after the order system is down. This is honest, but it will raise the manual-review rate. Phase 04 measures it.
 - **Stale reads combined with a definitive rejection can over-escalate.** If an earlier write landed but a stale read hides it, and the retry is then refused for a different reason, the operation escalates rather than rejecting. This is safe, but untested as a combined fault.
-- **The confirmation token is shown once.** A client that loses it must wait for expiry (15 min) before re-requesting.
 - **Reconciliation via read alone is weak** when keys are unsupported. It can't tell "not applied" from "stale". That is acceptable only because every re-dispatch is version-guarded.
 - **Verification uses one fresh read per system** per attempt. A *stale read showing the target* (one that hides a later revert) isn't modelled.
 - **There are no lease heartbeats.** A provider call longer than the lease (30 s) gets fenced. It is safe, but wasteful.

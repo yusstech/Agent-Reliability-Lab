@@ -36,7 +36,26 @@ export interface OperationView {
 
 export type SubmitResult =
   | { kind: 'created'; operation: OperationView; confirmation: { token: string; expires_at: string } }
-  | { kind: 'replayed'; operation: OperationView };
+  | { kind: 'replayed'; operation: OperationView; confirmation?: { token: string; expires_at: string } };
+
+const newToken = () => randomBytes(16).toString('base64url');
+
+/**
+ * A replay by the owner of a request still awaiting confirmation gets a fresh token, and
+ * the previous one stops working. A client that lost the 202 can still confirm, and a
+ * leaked earlier token is revoked. The expiry is not extended.
+ */
+async function reissueConfirmation(pool: pg.Pool, op: OperationRow) {
+  if (op.status !== 'NEEDS_CONFIRMATION') return undefined;
+  const token = newToken();
+  const { rows } = await pool.query<{ expires_at: Date }>(
+    `UPDATE ledger.confirmations SET token_sha256 = $2
+     WHERE operation_id = $1 AND confirmed_at IS NULL AND expires_at > now() RETURNING expires_at`,
+    [op.id, hashToken(token)],
+  );
+  const row = rows[0];
+  return row ? { token, expires_at: row.expires_at.toISOString() } : undefined;
+}
 
 /** Request-time refusals: HTTP status and public code per reason. */
 const REFUSALS: Record<string, { status: number; code: ErrorCode; message: string }> = {
@@ -103,7 +122,8 @@ export async function submitAddressChange(deps: RequestDeps, identity: Identity,
     }
     const refused = refusalFor(existing);
     if (refused) throw refused;
-    return { kind: 'replayed', operation: await viewOf(pool, existing) };
+    const confirmation = await reissueConfirmation(pool, existing);
+    return { kind: 'replayed', operation: await viewOf(pool, existing), ...(confirmation ? { confirmation } : {}) };
   };
   const prior = await replay();
   if (prior) return prior;
@@ -148,7 +168,7 @@ export async function submitAddressChange(deps: RequestDeps, identity: Identity,
         await appendEvent(client, op.id, { step: 'TRANSITION', from_status: 'RECEIVED', to_status: 'REJECTED', reason_code: refusal });
         return { op, token: null };
       }
-      const token = randomBytes(16).toString('base64url');
+      const token = newToken();
       const ttl = deps.confirmationTtlMs ?? 15 * 60_000;
       await client.query(
         `INSERT INTO ledger.confirmations (operation_id, token_sha256, expires_at) VALUES ($1, $2, now() + make_interval(secs => $3::float8 / 1000))`,
@@ -166,6 +186,7 @@ export async function submitAddressChange(deps: RequestDeps, identity: Identity,
     if (constraint === 'operations_customer_idempotency_key_uq') {
       const raced = await replay();
       if (raced) return raced;
+      throw new AppError(409, 'OPERATION_IN_PROGRESS', 'a request with this idempotency key is being processed; retry with the same key');
     }
     if (constraint !== 'operations_one_unresolved_per_order_uq') throw err;
     await expireStaleConfirmations(pool, input.order_id);
@@ -214,6 +235,7 @@ export async function confirmOperation(deps: RequestDeps, identity: Identity, op
     if (op.status !== 'NEEDS_CONFIRMATION') {
       // Repeating a successful confirmation is harmless and returns the current state.
       if (challenge.confirmed_at && matches) return { op, expired: false };
+      if (op.public_reason === 'CONFIRMATION_EXPIRED') return { op, expired: true };
       throw new AppError(409, 'OPERATION_NOT_AWAITING_CONFIRMATION', 'this operation is no longer awaiting confirmation');
     }
     if (challenge.expired) return { op: await applyTransition(client, op, 'REJECTED', 'CONFIRMATION_EXPIRED'), expired: true };
