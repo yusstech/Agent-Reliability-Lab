@@ -69,7 +69,7 @@ describe('operation state model', () => {
   });
 
   it('ST-06 no exit to REJECTED once the carrier write may have been dispatched', () => {
-    for (const from of ['UPDATING_CARRIER', 'VERIFYING', 'PENDING_RECONCILIATION'] as const) {
+    for (const from of ['UPDATING_CARRIER', 'VERIFYING', 'PENDING_RECONCILIATION', 'COMPENSATING'] as const) {
       expect(codeOf(t(from, 'REJECTED'))).not.toBeNull();
     }
   });
@@ -100,6 +100,18 @@ describe('operation state model', () => {
       }
     }
     expect(seen.has('REJECTED|true')).toBe(false);
+  });
+
+  it('ST-06d after the carrier step, REJECTED needs fresh evidence that both systems are restored', () => {
+    const visited: OperationStatus[] = ['RECEIVED', 'NEEDS_CONFIRMATION', 'QUEUED', 'UPDATING_ORDER', 'UPDATING_CARRIER', 'COMPENSATING'];
+    const original = 'addr_001';
+    const base = { visited, originalAddressId: original };
+    expect(codeOf(t('COMPENSATING', 'REJECTED', base))).toBe('SIDE_EFFECT_POSSIBLE');
+    expect(codeOf(t('COMPENSATING', 'REJECTED', { ...base, compensation: { orderAddressId: original, carrierAddressId: TARGET } }))).toBe('SIDE_EFFECT_POSSIBLE');
+    expect(codeOf(t('COMPENSATING', 'REJECTED', { ...base, compensation: { orderAddressId: TARGET, carrierAddressId: original } }))).toBe('SIDE_EFFECT_POSSIBLE');
+    expect(codeOf(t('COMPENSATING', 'REJECTED', { ...base, compensation: { orderAddressId: original, carrierAddressId: original } }))).toBeNull();
+    // Evidence without a declared original proves nothing.
+    expect(codeOf(t('COMPENSATING', 'REJECTED', { visited, compensation: { orderAddressId: original, carrierAddressId: original } }))).toBe('SIDE_EFFECT_POSSIBLE');
   });
 
   it('ST-07 confirmation cannot be skipped', () => {

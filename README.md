@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phases 01 (foundation) and 02 (mock providers and fault injection) have passed their gates** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md)). The schema, contracts, state model, mock identity and deterministic fixtures exist, and 78 automated tests pass from a clean database. There is **no** worker, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phases 01 and 02 have passed their gates; Phase 03 (variant A, the deterministic baseline) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 116 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
 
 ## The question
 
@@ -30,9 +30,10 @@ The primary metric is **claim accuracy**: whether what the customer was told mat
 | Mock server-side identity (hashed session tokens) | Tested | API-03…06 |
 | Strict request validation with a stable error envelope | Tested | VA-01…06, API-07…10 |
 | `GET /health` | Tested | API-01…02 |
-| Address-change execution, confirmation, worker, verifier | Not implemented (Phase 03); the endpoint returns `501` | API-09 |
+| Variant A end to end: request validation, one-time consent token, durable ledger, leased and fenced worker, reconciliation, compensation, independent verifier, truthful customer status | Tested | RQ-01…10, CF-01…04, WK-01…14, [10 golden workflow traces](docs/PHASES/evidence/phase-03-workflow-traces.md) |
+| Rule-based intent layer (variant A's language baseline) | Tested (unit) | IN-01…06 |
 | Independent order and carrier services: separate DB roles, append-only mutation logs, idempotency on or off, all 8 spec fault modes | Tested | PV-01…05, PB-01…07, FD-01…03, [12 golden fault traces](docs/PHASES/evidence/phase-02-fault-traces.md) |
-| 50-case evaluation, results | Not implemented (Phase 04) | — |
+| 50-case evaluation, metrics, results | Not implemented (Phase 04) | — |
 | Agent-directed / hybrid variants | Not implemented (Phase 05) | — |
 
 Full record, including problems found along the way: [Phase 01 report](docs/PHASES/PHASE-01-FOUNDATION.md).
@@ -48,11 +49,13 @@ npm run db:up            # Postgres 16 on 127.0.0.1:54329
 npm run migrate          # → migrations applied: 0001_foundation
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
-npm test                 # → Tests 78 passed (78); resets its own arl_test database
+npm test                 # → Tests 116 passed (116); resets its own arl_test database
 npm run traces           # regenerates the Phase 02 fault-trace evidence
+npm run traces:workflow  # regenerates the Phase 03 workflow-trace evidence
 npm start                # API on http://127.0.0.1:3000
 npm run start:order      # mock order service on :3101 (separate process)
 npm run start:carrier    # mock carrier service on :3102
+npm run start:worker     # variant A worker (separate process)
 ```
 
 Example responses (captured 2026-11-02; request IDs vary):
@@ -70,6 +73,25 @@ $ curl -s -X POST localhost:3000/v1/address-change-requests \
 {"error":{"code":"VALIDATION_FAILED","message":"request body is invalid","request_id":"…","details":[{"path":"customer_id","issue":"unrecognized_key","message":"field is not accepted"}]}}
 ```
 
+An end-to-end address change through variant A, with the API, both providers and the worker running as separate processes. Captured 2026-11-04; IDs and timestamps vary, and some fields are elided:
+
+```sh
+$ curl -s -X POST localhost:3000/v1/address-change-requests -H 'Authorization: Bearer mock_session_cus_001' \
+    -H 'content-type: application/json' \
+    -d '{"order_id":"ord_1001","new_address_id":"addr_001","message":"Please send my order to my home address","idempotency_key":"req_demo_0001"}'
+{"operation_id":"op_5f1e…","status":"NEEDS_CONFIRMATION","customer_status":"pending",…,"summary":"Change ord_1001 to saved address addr_001","confirmation":{"token":"xfU4…","expires_at":"…"}}
+
+$ curl -s -X POST localhost:3000/v1/operations/op_5f1e…/confirm -H 'Authorization: Bearer mock_session_cus_001' \
+    -H 'content-type: application/json' -d '{"confirmation_token":"xfU4…"}'
+{"operation_id":"op_5f1e…","status":"QUEUED","customer_status":"pending",…,"reason":"CONFIRMED_BY_CUSTOMER",…}
+
+$ curl -s localhost:3000/v1/operations/op_5f1e… -H 'Authorization: Bearer mock_session_cus_001'
+{"operation_id":"op_5f1e…","status":"COMPLETED","customer_status":"completed",…,"reason":"VERIFIED_BOTH_SYSTEMS",…,"verified":{"order_address_id":"addr_001","carrier_address_id":"addr_001"}}
+
+$ curl -s -X POST localhost:3000/v1/operations/op_5f1e…/confirm -H 'Authorization: Bearer mock_session_cus_002' …
+{"error":{"code":"OPERATION_NOT_FOUND","message":"operation not found","request_id":"…"}}
+```
+
 Fixture session tokens are `mock_session_cus_001` … `mock_session_cus_008`. They are synthetic and only work against the local database. `npm run db:reset` drops, migrates and reseeds `arl_dev`. It, and `seed`, refuse any database host other than localhost. `npm run db:down` removes the container and its data.
 
 ## Repository map
@@ -79,7 +101,7 @@ Fixture session tokens are `mock_session_cus_001` … `mock_session_cus_008`. Th
 - [docs/RELATED_WORK.md](docs/RELATED_WORK.md): prior work and positioning
 - [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md): phases, gates, progress
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): implemented components and trust boundaries
-- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0008
+- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0009
 - [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md): evidence and writing rules; [docs/TEMPLATES/](docs/TEMPLATES/)
 - `migrations/`, `src/`, `fixtures/`, `scripts/`, `tests/`: implementation
 

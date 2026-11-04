@@ -4,6 +4,7 @@ import { hashToken } from '../security/token-hash.ts';
 
 // Every fixture table; truncated together in one statement so FKs are satisfied.
 const TABLES = [
+  'ledger.confirmations',
   'ledger.operation_events',
   'ledger.operations',
   'carrier_svc.address_mutations',

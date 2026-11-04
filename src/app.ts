@@ -3,11 +3,17 @@ import Fastify, { type FastifyError, type FastifyInstance, type FastifyRequest, 
 import type pg from 'pg';
 import { AppError, envelope } from './http/errors.ts';
 import { type Identity, resolveIdentity } from './http/identity.ts';
-import { AddressChangeRequestSchema, parseBody } from './http/schemas.ts';
+import { AddressChangeRequestSchema, ConfirmBodySchema, InterpretBodySchema, OperationParamsSchema, parseBody } from './http/schemas.ts';
+import { interpret } from './intent/rule-parser.ts';
+import type { Providers } from './workflow/adapters.ts';
+import { confirmOperation, getOperation, getOperationEvents, type RequestDeps, submitAddressChange } from './workflow/requests.ts';
 
 export interface AppOptions {
   pool: pg.Pool;
+  providers: Providers;
   logger?: FastifyServerOptions['logger'];
+  /** Overrides for request-path behaviour (tests, traces). */
+  requests?: Pick<RequestDeps, 'confirmationTtlMs' | 'newId'>;
 }
 
 const BODY_LIMIT_BYTES = 16 * 1024;
@@ -48,7 +54,8 @@ function fromFrameworkError(err: FastifyError): AppError {
   return new AppError(500, 'INTERNAL', 'internal error');
 }
 
-export function buildApp({ pool, logger = false }: AppOptions): FastifyInstance {
+export function buildApp({ pool, providers, logger = false, requests = {} }: AppOptions): FastifyInstance {
+  const deps: RequestDeps = { pool, providers, ...requests };
   const app = Fastify({
     logger,
     bodyLimit: BODY_LIMIT_BYTES,
@@ -100,11 +107,46 @@ export function buildApp({ pool, logger = false }: AppOptions): FastifyInstance 
       return { customer_id: identity.customerId, auth_mode: identity.authMode };
     });
 
-    // Phase 01 ships the contract boundary only: authentication, then strict validation.
-    // Ownership, eligibility, idempotent operation creation and confirmation are Phase 03.
-    v1.post('/address-change-requests', async (request) => {
-      parseBody(AddressChangeRequestSchema, request.body);
-      throw new AppError(501, 'NOT_IMPLEMENTED', 'address-change execution is implemented in Phase 03');
+    // Spec §7. Creates the operation and a consent challenge; nothing changes until confirmed.
+    v1.post('/address-change-requests', async (request, reply) => {
+      const input = parseBody(AddressChangeRequestSchema, request.body);
+      const result = await submitAddressChange(deps, identityOf(request), input);
+      if (result.kind === 'replayed') return result.operation;
+      reply.status(202);
+      return {
+        ...result.operation,
+        summary: `Change ${result.operation.order_id} to saved address ${result.operation.target_address_id}`,
+        confirmation: result.confirmation,
+      };
+    });
+
+    v1.post('/operations/:id/confirm', async (request) => {
+      const { id } = parseBody(OperationParamsSchema, request.params);
+      const { confirmation_token } = parseBody(ConfirmBodySchema, request.body);
+      return confirmOperation(deps, identityOf(request), id, confirmation_token);
+    });
+
+    v1.get('/operations/:id', async (request) => {
+      const { id } = parseBody(OperationParamsSchema, request.params);
+      return getOperation(deps, identityOf(request), id);
+    });
+
+    v1.get('/operations/:id/events', async (request) => {
+      const { id } = parseBody(OperationParamsSchema, request.params);
+      return { events: await getOperationEvents(deps, identityOf(request), id) };
+    });
+
+    // Variant A's language baseline: read-only interpretation, no side effects.
+    v1.post('/intents/interpret', async (request) => {
+      const { message } = parseBody(InterpretBodySchema, request.body);
+      const identity = identityOf(request);
+      const orders = await providers.order.list(identity.customerId);
+      if (orders.kind !== 'ok') throw new AppError(503, 'DEPENDENCY_UNAVAILABLE', 'order system unavailable');
+      const { rows: addresses } = await pool.query(
+        'SELECT id, customer_id, normalized_address FROM identity.saved_addresses WHERE customer_id = $1 ORDER BY id',
+        [identity.customerId],
+      );
+      return interpret(message, orders.body.orders, addresses);
     });
   }, { prefix: '/v1' });
 

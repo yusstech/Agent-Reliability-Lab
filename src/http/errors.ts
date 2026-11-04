@@ -12,6 +12,16 @@ export type ErrorCode =
   | 'METHOD_NOT_ALLOWED'
   | 'NOT_IMPLEMENTED'
   | 'DEPENDENCY_UNAVAILABLE'
+  | 'IDEMPOTENCY_KEY_REUSED'
+  | 'OPERATION_IN_PROGRESS'
+  | 'ORDER_NOT_FOUND'
+  | 'ADDRESS_NOT_FOUND'
+  | 'ORDER_NOT_ELIGIBLE'
+  | 'ADDRESS_UNCHANGED'
+  | 'OPERATION_NOT_FOUND'
+  | 'OPERATION_NOT_AWAITING_CONFIRMATION'
+  | 'CONFIRMATION_INVALID'
+  | 'CONFIRMATION_EXPIRED'
   | 'INTERNAL';
 
 export interface ErrorDetail {
@@ -26,6 +36,8 @@ export interface ErrorEnvelope {
     code: ErrorCode;
     message: string;
     request_id: string;
+    /** Set when the request was recorded as an operation (e.g. a refused address change). */
+    operation_id?: string;
     details?: ErrorDetail[];
   };
 }
@@ -34,12 +46,14 @@ export class AppError extends Error {
   readonly statusCode: number;
   readonly code: ErrorCode;
   readonly details: ErrorDetail[] | undefined;
-  constructor(statusCode: number, code: ErrorCode, message: string, details?: ErrorDetail[]) {
+  readonly operationId: string | undefined;
+  constructor(statusCode: number, code: ErrorCode, message: string, details?: ErrorDetail[], operationId?: string) {
     super(message);
     this.name = 'AppError';
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;
+    this.operationId = operationId;
   }
 }
 
@@ -49,6 +63,7 @@ export function envelope(err: AppError, requestId: string): ErrorEnvelope {
       code: err.code,
       message: err.message,
       request_id: requestId,
+      ...(err.operationId ? { operation_id: err.operationId } : {}),
       ...(err.details ? { details: err.details } : {}),
     },
   };
