@@ -1,7 +1,7 @@
 # Implementation Roadmap
 
 **Agent Reliability Lab · Investigation 001 · Roadmap v0.2**  
-**Status:** Phase 01 passed (`c8bae58`); Phase 02 passed (`1161eaa`); Phase 03 passed (`50f784a`); Phase 04 next. No milestone is marked complete without a working artifact and logged evidence.
+**Status:** Phase 01 passed (`c8bae58`); Phase 02 passed (`1161eaa`); Phase 03 passed (`50f784a`); Phase 04 tested (gate pending merge). Evaluation Plan frozen at `eval-plan-v1.2`. No milestone is marked complete without a working artifact and logged evidence.
 
 ## Delivery principles
 
@@ -117,6 +117,6 @@ Do not build authentication infrastructure for production, real carrier integrat
 | 01 Foundation | **Passed** (`c8bae58`) | [PHASE-01](PHASES/PHASE-01-FOUNDATION.md) | — |
 | 02 Mock services | **Passed** (`1161eaa`) | [PHASE-02](PHASES/PHASE-02-MOCK-SERVICES.md) | — |
 | 03 Deterministic | **Passed** (`50f784a`) | [PHASE-03](PHASES/PHASE-03-DETERMINISTIC.md) | — |
-| 04 Evaluation harness | Not started | — | Freeze the Evaluation Plan; R-dev dataset; runner; metrics; exports |
-| 05 Model variants | Not started | — | Follow phase 04 gate |
+| 04 Evaluation harness | Tested, gate pending merge | [PHASE-04](PHASES/PHASE-04-EVALUATION.md) | Merge; record commit; sign off |
+| 05 Model variants | Not started | — | Cost pilot; B0–B3 and C on R-dev; language set; freeze variants; R-conf and R-hold |
 | 06 Publication | Not started | — | Follow phase 05 gate |

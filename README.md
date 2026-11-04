@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phases 01–03 have passed their gates, including variant A, the deterministic baseline** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md)). 125 automated tests pass from a clean database. There is **no** evaluation harness, model integration or experimental result yet. Nothing here is a measured finding.
+> **Status: Phases 01–03 have passed their gates; Phase 04 (evaluation harness) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md), [04](docs/PHASES/PHASE-04-EVALUATION.md)). The Evaluation Plan is **frozen** (tag `eval-plan-v1.2`). The first measured result is a *development-set* baseline for variant A (below). There is **no** model integration and no confirmatory result yet. 145 automated tests pass from a clean database.
 
 ## The question
 
@@ -33,10 +33,22 @@ The primary metric is **claim accuracy**: whether what the customer was told mat
 | Variant A end to end: request validation, one-time consent token, durable ledger, leased and fenced worker, reconciliation, compensation, independent verifier, truthful customer status | Tested | RQ-01…11, CF-01…05, WK-01…20, [10 golden workflow traces](docs/PHASES/evidence/phase-03-workflow-traces.md) |
 | Rule-based intent layer (variant A's language baseline) | Tested (unit) | IN-01…06 |
 | Independent order and carrier services: separate DB roles, append-only mutation logs, idempotency on or off, all 8 spec fault modes | Tested | PV-01…05, PB-01…07, FD-01…03, [12 golden fault traces](docs/PHASES/evidence/phase-02-fault-traces.md) |
-| 50-case evaluation, metrics, results | Not implemented (Phase 04) | — |
+| Evaluation harness: frozen definitions, seeded 50-case R-dev dataset, raw-first runner, pure scorer, exact and bootstrap intervals, pass^k | Tested | SX, SC, DS, EV tests; [two committed runs](results/) |
 | Agent-directed / hybrid variants | Not implemented (Phase 05) | — |
 
 Full record, including problems found along the way: [Phase 01 report](docs/PHASES/PHASE-01-FOUNDATION.md).
+
+## First result (development set, variant A)
+
+| | |
+| --- | --- |
+| Case-runs | 250 (50 R-dev cases × k = 5); an independent rerun reproduced every outcome |
+| False claims | **0 of 250** (exact 95% upper bound 7.1%, n = 50 cases) |
+| Verified completion / correct outcome | 150 / 150; 100% |
+| Manual review | 2.0% (the one case where escalation is the only truthful answer) |
+| Unauthorized or duplicate writes | 0 / 0 |
+
+**Read this carefully.** Variant A was designed against exactly these fault types, by the author of the dataset. A perfect development-set score is therefore expected, and weak evidence. It shows the harness can score a correct system, not that A is reliable in general. The tests of generality are the held-out faults and the comparison with variants B and C ([Phase 04 report](docs/PHASES/PHASE-04-EVALUATION.md), [run report](results/20261104T193231Z-A-7397818/report.md)).
 
 ## Run it
 
@@ -49,9 +61,11 @@ npm run db:up            # Postgres 16 on 127.0.0.1:54329
 npm run migrate          # → migrations applied: 0001_foundation
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
-npm test                 # → Tests 125 passed (125); resets its own arl_test database
+npm test                 # → Tests 145 passed (145); resets its own arl_test database
 npm run traces           # regenerates the Phase 02 fault-trace evidence
 npm run traces:workflow  # regenerates the Phase 03 workflow-trace evidence
+npm run eval -- --k 5    # full R-dev run on variant A → results/<run-id>/ (several minutes)
+npm run eval:score -- results/<run-id>   # re-derive every table from the raw events
 npm start                # API on http://127.0.0.1:3000
 npm run start:order      # mock order service on :3101 (separate process)
 npm run start:carrier    # mock carrier service on :3102
@@ -101,7 +115,9 @@ Fixture session tokens are `mock_session_cus_001` … `mock_session_cus_008`. Th
 - [docs/RELATED_WORK.md](docs/RELATED_WORK.md): prior work and positioning
 - [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md): phases, gates, progress
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): implemented components and trust boundaries
-- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0009
+- [docs/DECISIONS/](docs/DECISIONS/): ADR-0001…0010
+- [docs/EVALUATION_DEVIATIONS.md](docs/EVALUATION_DEVIATIONS.md): every change to the frozen plan, with its reason
+- [results/](results/): committed experiment runs (manifest, raw events, derived tables)
 - [docs/DOCUMENTATION_STANDARD.md](docs/DOCUMENTATION_STANDARD.md): evidence and writing rules; [docs/TEMPLATES/](docs/TEMPLATES/)
 - `migrations/`, `src/`, `fixtures/`, `scripts/`, `tests/`: implementation
 
