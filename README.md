@@ -2,6 +2,8 @@
 
 **Making AI-powered business operations verifiable, recoverable, and measurable.**
 
+By Yusuf Muhammed ([@yusstech](https://github.com/yusstech)).
+
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
 > **Status: Phases 01–04 have passed their gates, through the evaluation harness** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md), [04](docs/PHASES/PHASE-04-EVALUATION.md)). The Evaluation Plan is **frozen** (tag `eval-plan-v1.2`). The first measured result is a *development-set* baseline for variant A (below). There is **no** model integration and no confirmatory result yet. 145 automated tests pass from a clean database.
@@ -18,7 +20,7 @@ The study is organised around one question: **for each business rule, does stati
 | B0–B3. Agent-directed ladder | A model sequences tools. Every rung gets the *same full written policy*; each rung moves more of the rules from the prompt into code. | Which rules a model can be trusted to follow, and which must be enforced. |
 | C. Hybrid (Action-Selector) | A model proposes one typed action; deterministic policy, workflow and verification control mutation and what the customer is told. | Whether language flexibility comes without execution risk. |
 
-The primary metric is **claim accuracy**: whether what the customer was told matches the verified state of both systems. It counts false success *and* false failure. Hypotheses are pre-registered in the [Evaluation Plan](docs/EVALUATION_PLAN.md). No winner is assumed, and the maintainer's prior is written down so it can be shown wrong. Prior work and what this study adds: [Related Work](docs/RELATED_WORK.md). **Invariant:** `COMPLETED` requires fresh authoritative reads showing the target address in *both* the order and carrier systems. A tool's "success" message is not enough.
+The primary metric is **claim accuracy**: whether what the customer was told matches the verified state of both systems. It counts false success *and* false failure. Hypotheses are pre-registered in the [Evaluation Plan](docs/EVALUATION_PLAN.md). No winner is assumed, and my prior is written down so it can be shown wrong. Prior work and what this study adds: [Related Work](docs/RELATED_WORK.md). **Invariant:** `COMPLETED` requires fresh authoritative reads showing the target address in *both* the order and carrier systems. A tool's "success" message is not enough.
 
 ## What exists today
 
@@ -36,7 +38,7 @@ The primary metric is **claim accuracy**: whether what the customer was told mat
 | Evaluation harness: frozen definitions, seeded 50-case R-dev dataset, raw-first runner, pure scorer, exact and bootstrap intervals, pass^k | Tested | SX, SC, DS, EV tests; [two committed runs](results/) |
 | Agent-directed / hybrid variants | Not implemented (Phase 05) | — |
 
-Full record, including problems found along the way: [Phase 01 report](docs/PHASES/PHASE-01-FOUNDATION.md).
+Full record, including problems found along the way: phase reports [01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md), [04](docs/PHASES/PHASE-04-EVALUATION.md).
 
 ## First result (development set, variant A)
 
@@ -58,7 +60,7 @@ Full record, including problems found along the way: [Phase 01 report](docs/PHAS
 cp .env.example .env     # local-only throwaway credentials
 npm install
 npm run db:up            # Postgres 16 on 127.0.0.1:54329
-npm run migrate          # → migrations applied: 0001_foundation
+npm run migrate          # → migrations applied: 0001_foundation, 0002_provider_services, 0003_workflow
 npm run seed             # → seeded base-v1 seed=1042 digest=95661cd2…
 npm run typecheck
 npm test                 # → Tests 145 passed (145); resets its own arl_test database
@@ -72,7 +74,7 @@ npm run start:carrier    # mock carrier service on :3102
 npm run start:worker     # variant A worker (separate process)
 ```
 
-Example responses (captured 2026-11-02; request IDs vary):
+Example responses (Phase 01 output, captured 2026-11-02; request IDs vary):
 
 ```sh
 $ curl -s localhost:3000/health
@@ -127,10 +129,19 @@ Fixture session tokens are `mock_session_cus_001` … `mock_session_cus_008`. Th
 - The diagrams in the spec are *proposed* unless [ARCHITECTURE.md](docs/ARCHITECTURE.md) marks them implemented.
 - A fabricated model response is not evidence of agent reliability. Agent results will come only from real, logged model calls. These are planned with Claude Haiku 5.5 and Claude Sonnet 5.5, so the findings apply to those models and this harness, not to agents in general.
 - This is a research artifact, not production security guidance.
+- Model calls are funded with Anthropic startup credits, the implementation is AI-assisted with Claude, and the study evaluates Claude models. None of this changes the frozen plan; results are reported per model.
+
+## How this was built
+
+I designed the study: the question, the variants, the spec, the evaluation plan and the decision records. I set each phase gate and signed it off. The implementation was written with Claude (Anthropic) as an AI pair programmer under my direction, and the commits are co-authored. Code reviews were AI-assisted; I checked the findings, added my own and decided what to fix. The tests and committed runs are the evidence, not my say-so.
 
 ## References
 
 - AWS Builders' Library: [Making retries safe with idempotent APIs](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/)
 - OpenAI: [Agents SDK](https://developers.openai.com/api/docs/guides/agents/sdk) · [Guardrails and human review](https://developers.openai.com/api/docs/guides/agents/guardrails-approvals)
 
-*Maintainer: Yusuf Muhammed · Series: The Product Systems Notebook · Study: Investigation 001*
+## License
+
+[MIT](LICENSE) © 2026 Yusuf Muhammed
+
+*Author: Yusuf Muhammed ([@yusstech](https://github.com/yusstech)) · Series: The Product Systems Notebook · Study: Investigation 001 · Questions and feedback: [GitHub Issues](https://github.com/yusstech/Agent-Reliability-Lab/issues)*

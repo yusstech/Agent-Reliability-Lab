@@ -1,4 +1,4 @@
-# ADR-0007: Claude models, a hand-written tool loop, and a capped budget
+# ADR-0007: Claude models, a custom (framework-free) tool-use loop, and a capped budget
 
 - **Status:** Accepted
 - **Date:** 2026-11-04
@@ -6,7 +6,7 @@
 - **Amends:** spec §11 (it named the OpenAI Agents SDK); [EVALUATION_PLAN §5](../EVALUATION_PLAN.md#5-statistics) (it asked for models from different providers)
 
 ## Context
-The maintainer has Anthropic startup credits and a low budget. Three constraints follow.
+I have Anthropic startup credits and a low budget. Three constraints follow.
 1. **Models from one provider.** The evaluation plan asked for ≥2 models from different providers.
 2. **Sampling can't be pinned.** From API version `2026-10-21`, `temperature`, `top_p` and `top_k` are rejected on every Claude model, so runs are stochastic by design. Repetition is the only control. Model behaviour is pinned through the exact model ID, `effort`, and the thinking configuration.
 3. **Framework choice is a confound.** Prior work found that the agent stack matters more than model scale (arXiv:2610.32555).
@@ -24,7 +24,7 @@ Cache writes cost 1.25× input with a 5-minute TTL. The minimum cacheable prefix
 1. **OpenAI Agents SDK** (spec v0.2). It doesn't fit the credits, and it adds a framework layer we don't control.
 2. **The Claude Agent SDK.** This is the Claude Code harness, with built-in file and bash tools. It is far more tool surface than the study wants, and its loop isn't ours to instrument.
 3. **The Anthropic SDK Tool Runner.** It is less code, but it's a beta helper, and its loop policy (retries, step handling) becomes part of what we'd be measuring.
-4. **A hand-written tool-use loop on `@anthropic-ai/sdk`** (pinned exact version). We control and log every turn, step limit, token count and error, and the loop is identical for every B rung and both models.
+4. **A custom (framework-free) tool-use loop on `@anthropic-ai/sdk`** (pinned exact version). We control and log every turn, step limit, token count and error, and the loop is identical for every B rung and both models.
 
 ## Decision
 Option 4, configured as follows.
@@ -42,7 +42,7 @@ Option 4, configured as follows.
   - Every turn's `usage` (input, cache creation, cache read, output) is logged to `events.jsonl`.
 - **Caching:** the policy prompt and tool list are byte-identical across all episodes of a rung, with a cache breakpoint at the end of that shared prefix. Cache-read rates are checked in the pilot.
 - **Batches:** used for **single-call** workloads (variant C and the language set), where latency isn't a measured outcome for that run. Multi-turn B episodes run interactively, because latency is a metric.
-- **Raters:** the free-text audit (EVALUATION_PLAN §4.1) uses the maintainer and one external rater. Both are **blind to variant and model**, with identifiers stripped and order shuffled. The external rater's labels are primary, and agreement is reported as Cohen's κ.
+- **Raters:** the free-text audit (EVALUATION_PLAN §4.1) uses me and one external rater. Both are **blind to variant and model**, with identifiers stripped and order shuffled. The external rater's labels are primary, and agreement is reported as Cohen's κ.
 
 ## Budget estimate (to be replaced by pilot measurements)
 

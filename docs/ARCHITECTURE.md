@@ -2,7 +2,7 @@
 
 Status labels follow the [Documentation Standard](DOCUMENTATION_STANDARD.md). The target architecture is in [PROTOTYPE_SPEC §5](PROTOTYPE_SPEC.md#5-proposed-architecture).
 
-## Implemented (Phase 01)
+## Implemented (Phase 01; the 501 boundary was replaced by variant A in Phase 03)
 
 ```mermaid
 flowchart LR
@@ -53,6 +53,20 @@ flowchart LR
 
 Each step writes to at most one provider. The dispatch is logged before the call (write-ahead), and the result is recorded under the lease ([ADR-0009](DECISIONS/ADR-0009-deterministic-workflow-worker-and-recovery.md)). What the customer is told (`completed`, `not_changed`, `pending` or `needs_review`) is derived from the ledger status, never from a provider acknowledgement.
 
+## Implemented (Phase 04): evaluation harness
+
+```mermaid
+flowchart LR
+  D[(R-dev dataset<br/>datasets/r-dev-v1.json)] --> R[Runner: one case-run at a time, reseeded]
+  R -->|drives| SUT[Variant A: API, providers, worker]
+  R -->|raw observations only| E[(events.jsonl)]
+  E --> S[Pure scorer]
+  S --> O[cases.csv · summary.json · report.md]
+  R --> M[manifest.json: commit, dataset hash, frozen-plan hash, versions]
+```
+
+Truth is read straight from both provider stores; the claim is read through the customer API. Every derived file can be regenerated from `events.jsonl` with `npm run eval:score` ([ADR-0010](DECISIONS/ADR-0010-evaluation-harness.md)).
+
 ## Trust boundaries
 
 | Boundary | Rule | Enforced by |
@@ -70,4 +84,4 @@ Each step writes to at most one provider. The dispatch is logged before the call
 | Caller's view of outcomes | Timeout, reset and 5xx (except 501) are UNKNOWN, never failure | `ProviderClient` |
 
 ## Proposed (not implemented)
-The evaluation harness (Phase 04) and the model variants (Phase 05). See the [roadmap](IMPLEMENTATION_ROADMAP.md).
+The model variants B0–B3 and C (Phase 05). See the [roadmap](IMPLEMENTATION_ROADMAP.md).

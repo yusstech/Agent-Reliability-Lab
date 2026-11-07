@@ -3,7 +3,7 @@
 **Agent Reliability Lab · The Product Systems Notebook · Investigation 001**
 **The Agent Said "Done." The Order Wasn't Updated.**
 
-**Status:** Proposed design. Phase 01 foundation implemented; see [README](../README.md) for current status.
+**Status:** Proposed design. Phases 01–04 implemented; see [README](../README.md) for current status.
 **Source:** Transcribed from `Agent_Reliability_Lab_Prototype_Implementation_Guide_v0.2.docx` §1–22 (2026-11-02). Revised to **v0.3** on 2026-11-04 after a design review ([ADR-0006](DECISIONS/ADR-0006-enforcement-ladder-and-preregistration.md)); this file now supersedes the .docx.
 
 **v0.3 changes:** §1 adds claim accuracy as the primary outcome. §4 replaces the single variant B with an enforcement ladder (B0–B3). §10 defers measurement to the [Evaluation Plan](EVALUATION_PLAN.md): pre-registered hypotheses, confirmatory and held-out datasets, a language set, claim-accuracy metrics, repetitions and statistics. See [Related Work](RELATED_WORK.md) for positioning. Appendices A–B of that document live in [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) and [DOCUMENTATION_STANDARD.md](DOCUMENTATION_STANDARD.md).
@@ -49,7 +49,7 @@ Use the same scenarios and mock services in every comparison. For the initial re
 
 ## 5. Proposed architecture
 
-*Diagram status: proposed, not yet implemented beyond Phase 01.*
+*Diagram status: proposed. The deterministic path (rule-based intent → ledger → worker → verifier) is implemented as variant A (see [ARCHITECTURE.md](ARCHITECTURE.md)); model intent layers are not.*
 
 ```mermaid
 flowchart TD
@@ -79,7 +79,7 @@ flowchart TD
 
 `RECEIVED -> NEEDS_CONFIRMATION -> QUEUED -> UPDATING_ORDER -> UPDATING_CARRIER -> VERIFYING -> COMPLETED`
 
-Possible alternate transitions: `REJECTED`, `PENDING_RECONCILIATION`, `NEEDS_MANUAL_REVIEW`. `COMPLETED`, `REJECTED`, and `NEEDS_MANUAL_REVIEW` are terminal to automated execution. A reviewed operation can start a separately authorized recovery procedure; never silently reopen it.
+Possible alternate transitions: `REJECTED`, `PENDING_RECONCILIATION`, `NEEDS_MANUAL_REVIEW`. `COMPLETED`, `REJECTED`, and `NEEDS_MANUAL_REVIEW` are terminal to automated execution. A reviewed operation can start a separately authorized recovery procedure; never silently reopen it. *(v0.3 note: [ADR-0009](DECISIONS/ADR-0009-deterministic-workflow-worker-and-recovery.md) adds a `COMPENSATING` state.)*
 
 All transitions must be stored with timestamps and reason codes. A durable operation record and worker lease/recovery mechanism are required so a restart does not erase progress or trigger an uncontrolled duplicate side effect.
 
@@ -99,7 +99,7 @@ Server derives `customer_id` from session. Response `202`:
 
 `POST /v1/operations/{id}/confirm` uses a server-issued confirmation challenge bound to the order, customer, and proposed address. In the local demo this can be a simple explicit UI/API action; do not treat a model-produced `confirmed: true` flag as consent.
 
-`GET /v1/operations/{id}` returns status, timestamps, public failure/pending reason, and independently verified final address where applicable. Restricted `/dev/scenarios` endpoints inject mock faults; they must not exist in a production build.
+`GET /v1/operations/{id}` returns status, timestamps, public failure/pending reason, and independently verified final address where applicable. Restricted `/dev/scenarios` endpoints inject mock faults; they must not exist in a production build. *(Implemented as `/_dev/scenario`; [ADR-0008 §8](DECISIONS/ADR-0008-provider-simulation-and-fault-model.md).)*
 
 ## 8. Minimal data entities
 
@@ -146,7 +146,7 @@ These are development test targets, not reliability or safety guarantees for pro
 
 ## 11. Technology choices
 
-Suggested prototype stack: TypeScript, Node.js, Fastify, PostgreSQL, Vitest, and Docker Compose. A DB-backed worker is sufficient for the first prototype; do not introduce Temporal before showing that worker durability is a limiting problem. ~~Add the OpenAI Agents SDK in a second pass~~ (v0.3: superseded by [ADR-0007](DECISIONS/ADR-0007-models-harness-and-budget.md)). Model runs use a hand-written tool-use loop on the Anthropic TypeScript SDK, with Claude Haiku 5.5 as the primary model and Claude Sonnet 5.5 for confirmatory runs, using restricted mock tools only. An API-first demo is enough; a polished frontend is intentionally deferred.
+Suggested prototype stack: TypeScript, Node.js, Fastify, PostgreSQL, Vitest, and Docker Compose. A DB-backed worker is sufficient for the first prototype; do not introduce Temporal before showing that worker durability is a limiting problem. ~~Add the OpenAI Agents SDK in a second pass~~ (v0.3: superseded by [ADR-0007](DECISIONS/ADR-0007-models-harness-and-budget.md)). Model runs use a custom (framework-free) tool-use loop on the Anthropic TypeScript SDK, with Claude Haiku 5.5 as the primary model and Claude Sonnet 5.5 for confirmatory runs, using restricted mock tools only. An API-first demo is enough; a polished frontend is intentionally deferred.
 
 ## 12. Implementation order
 
@@ -202,11 +202,11 @@ docs/PROTOTYPE_SPEC.md           # This specification
 docs/IMPLEMENTATION_ROADMAP.md   # Phase checklists, gates and status
 docs/DOCUMENTATION_STANDARD.md   # Evidence / writing rules
 docs/ARCHITECTURE.md             # Trust boundaries, execution architecture
-docs/EVALUATION_PLAN.md          # Scenario design and measurement rules (planned, before Phase 04)
+docs/EVALUATION_PLAN.md          # Scenario design and measurement rules (frozen at eval-plan-v1.2)
 docs/DECISIONS/ADR-*.md          # Trade-off decisions
 docs/PHASES/PHASE-*.md           # Phase journal, test links, gate decisions
 docs/TEMPLATES/*.md              # ADR, phase, experiment templates
-results/<run-id>/                # PLANNED: real generated experiment artifacts
+results/<run-id>/                # Committed experiment runs (manifest, raw events, derived tables)
 src/, tests/, fixtures/          # Implementation (Phase 01 onward)
 ```
 

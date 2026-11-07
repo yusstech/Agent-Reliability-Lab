@@ -92,7 +92,7 @@ npm test          # Test Files 8 passed (8) · Tests 50 passed (50)
 2. Vitest collected macOS AppleDouble `._*.test.ts` files, which exFAT creates, and failed to parse them. Fix: excluded `**/._*`.
 3. API-08 initially failed: `text/plain` returned 400, not 415, because Fastify registers a default text parser. Fix: the parser is removed, so the API is JSON-only (ADR-0005).
 
-**Code review (2026-11-02).** A full review of `src`, `fixtures`, `scripts`, `tests` and `migrations` found 10 issues. All were confirmed and fixed, each with a regression test where one could be written:
+**Code review (2026-11-02).** (AI-assisted review with Claude, which I checked and added to.) A full review of `src`, `fixtures`, `scripts`, `tests` and `migrations` found 10 issues. All were confirmed and fixed, each with a regression test where one could be written:
 
 | # | Issue | Fix | Test |
 | --- | --- | --- | --- |
