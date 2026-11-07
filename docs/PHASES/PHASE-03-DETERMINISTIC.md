@@ -124,9 +124,9 @@ npm run traces:workflow    # 10 traces; byte-identical on regeneration (TR-04)
 1. **ST-06 found a gap.** `COMPENSATING → REJECTED` was allowed when a caller passed incomplete history. `COMPENSATING` now implies the carrier step was entered.
 2. **WK-07 found a worker logic bug.** A write that was *definitively refused* (`409`) was counted as "possibly applied", which escalated a clean rejection to manual review. Dispatches are now paired with their results by idempotency key, and only open or unknown ones count.
 3. **A racy test (WK-13).** It "stole" the lease with an un-awaited query. The crash hook is now awaitable, the test is deterministic, and it passed three repeated runs.
-4. **A reporting overstatement.** My first trace summary counted `needs_review` as "claim matches truth". It now reports *false claims* exactly as the Evaluation Plan defines them.
+4. **A reporting overstatement.** The first trace summary counted `needs_review` as "claim matches truth". It now reports *false claims* exactly as the Evaluation Plan defines them.
 
-**Code review of PR #2 (2026-11-04).** It found 10 issues. 9 were confirmed and fixed, each with a regression test. Each of those tests was run against the pre-fix code: 5 fail there, and WK-17 fails once the specific fix is disabled. The 10th was a sound question that exposed a loosely argued rule, now made exact.
+**Code review of PR #2 (2026-11-04).** (AI-assisted review with Claude, which I checked and added to.) It found 10 issues. 9 were confirmed and fixed, each with a regression test. Each of those tests was run against the pre-fix code: 5 fail there, and WK-17 fails once the specific fix is disabled. The 10th was a sound question that exposed a loosely argued rule, now made exact.
 
 | # | Issue | Resolution | Test |
 | --- | --- | --- | --- |

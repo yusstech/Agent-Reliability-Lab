@@ -74,7 +74,7 @@
 
 **Goal:** Compare model-directed execution with the deterministic baseline under controlled conditions.
 
-**Build:** restricted model/tool interface, typed actions, model-side traces, controlled budgets; the agent-directed **ladder B0–B3**, with the same written policy at every rung and enforcement varying by rung ([ADR-0006](DECISIONS/ADR-0006-enforcement-ladder-and-preregistration.md)); a `report_to_customer` status tool; the hybrid variant C (Action-Selector); language set L, including injection through tool-returned data; Claude Haiku 5.5 (primary) and Claude Sonnet 5.5 (confirmatory only), 5 repetitions per case, through one hand-written tool loop ([ADR-0007](DECISIONS/ADR-0007-models-harness-and-budget.md)). Start with a cost pilot, and stay within the $175 cap. Then **freeze**, generate R-conf, sample R-hold, and run the confirmatory suite once.
+**Build:** restricted model/tool interface, typed actions, model-side traces, controlled budgets; the agent-directed **ladder B0–B3**, with the same written policy at every rung and enforcement varying by rung ([ADR-0006](DECISIONS/ADR-0006-enforcement-ladder-and-preregistration.md)); a `report_to_customer` status tool; the hybrid variant C (Action-Selector); language set L, including injection through tool-returned data; Claude Haiku 5.5 (primary) and Claude Sonnet 5.5 (confirmatory only), 5 repetitions per case, through one custom (framework-free) tool-use loop ([ADR-0007](DECISIONS/ADR-0007-models-harness-and-budget.md)). Start with a cost pilot, and stay within the $175 cap. Then **freeze**, generate R-conf, sample R-hold, and run the confirmatory suite once.
 
 **Decisions to record:** tool permission boundaries, model/provider/version and parameters, token/call budgets, max-step limits, approval handling, fallback strategy.
 
@@ -87,6 +87,8 @@
 ## Pre-registration gate (before Phase 04 runs)
 
 Freeze [EVALUATION_PLAN.md](EVALUATION_PLAN.md) at a tagged commit. Every later run manifest records its hash, and every subsequent change is a logged deviation.
+
+**Done:** tag `eval-plan-v1.2` → `57de113`, pushed before the first scored run. Deviations are logged in [EVALUATION_DEVIATIONS.md](EVALUATION_DEVIATIONS.md).
 
 ## Phase 06 — Findings, Case Study & Publication
 

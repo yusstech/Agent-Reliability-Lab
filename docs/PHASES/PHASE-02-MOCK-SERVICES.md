@@ -94,7 +94,7 @@ npm run traces      # wrote 12 scenario traces to docs/PHASES/evidence/
 - **P02-08:** a read-then-write with `expected_version` catches the concurrent shipment (`409`). The carrier refuses its write (`422 SHIPMENT_DISPATCHED`).
 - **P02-11:** the write happened and the status endpoint is down. Only the honoured-key replay makes the retry safe.
 
-**Code review of PR #1 (2026-11-04).** It found 10 issues. 9 were confirmed and fixed; for the 10th, the classification stays and the contract was made explicit.
+**Code review of PR #1 (2026-11-04).** (AI-assisted review with Claude, which I checked and added to.) It found 10 issues. 9 were confirmed and fixed; for the 10th, the classification stays and the contract was made explicit.
 
 | # | Issue | Resolution | Test |
 | --- | --- | --- | --- |

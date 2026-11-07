@@ -13,7 +13,7 @@
 | ADRs explaining non-obvious decisions | `docs/DECISIONS/ADR-XXXX-*.md` | Before/with the decision, not retrospectively |
 | Phase log + evidence | `docs/PHASES/PHASE-XX-*.md` | Throughout the phase; finalize at gate |
 | Experiment methods, definitions, sampling | `docs/EVALUATION_PLAN.md` | Before executing the comparative suite |
-| Raw experimental observations | `results/<run-id>/` (planned) | Each test run, ideally exported by automation |
+| Raw experimental observations | `results/<run-id>/` | Each test run, ideally exported by automation |
 | Research narrative + verified findings | `docs/RESEARCH_REPORT.md` (planned) | After analyzing actual runs |
 
 ## The eight-part phase record

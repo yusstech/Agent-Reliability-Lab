@@ -58,7 +58,7 @@ Given the work above, Investigation 001 makes these claims of novelty, scoped ca
 
 **Not novel, and stated as such:** that database-state grading beats self-report, that idempotency prevents duplicates, and that deterministic orchestration is cheaper. These are confirmations of prior work.
 
-**Naming:** a public repository named `agent-reliability-lab` already covers adjacent ground. The maintainer has decided to keep the name (2026-11-04). Every publication must cite that repository and state the differences above.
+**Naming:** a public repository named `agent-reliability-lab` already covers adjacent ground. I decided to keep the name (2026-11-04). Every publication must cite that repository and state the differences above.
 
 ## Sources
 

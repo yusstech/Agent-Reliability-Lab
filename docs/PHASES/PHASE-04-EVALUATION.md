@@ -2,7 +2,7 @@
 
 - **Status:** **Passed** (2026-11-07)
 - **Dates:** 2026-11-04 → 2026-11-07
-- **Commit at gate:** `6e2d862` (merge of [PR #3](https://github.com/yusstech/Agent-Reliability-Lab/pull/3)). The merged `main` was re-verified: 20 files and 145 tests pass from an empty database; both committed runs re-score with zero changed files; and the freeze commit `57de113` is in `main`'s history. *This PR was merged without a separate code-review pass, at the maintainer's direction (unlike Phases 02–03).*
+- **Commit at gate:** `6e2d862` (merge of [PR #3](https://github.com/yusstech/Agent-Reliability-Lab/pull/3)). The merged `main` was re-verified: 20 files and 145 tests pass from an empty database; both committed runs re-score with zero changed files; and the freeze commit `57de113` is in `main`'s history. *I merged this PR without a separate code-review pass (unlike Phases 02–03).*
 
 ## 1. Goal / research value
 Turn the implementation into a **falsifiable, repeatable experiment**. Every number must be regenerable from raw events, and the definitions must be fixed in public before anything is measured. That way, variants B and C (Phase 05) are scored by exactly the same rules, and neither can be favoured after the fact.
