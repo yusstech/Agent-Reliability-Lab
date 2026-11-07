@@ -10,7 +10,7 @@
 // and a --budget-usd within the study cap (ADR-0007), and stop before crossing the budget.
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -28,6 +28,7 @@ import { type Dataset, datasetDigest, type EvalCase } from '../src/eval/dataset.
 import { runCaseOnAgent } from '../src/eval/run-agent.ts';
 import { type RawCaseRun, runCaseOnVariantA } from '../src/eval/run-variant-a.ts';
 import { runCaseOnVariantC } from '../src/eval/run-variant-c.ts';
+import { acquireRunLock } from '../src/eval/run-lock.ts';
 import { seed } from '../src/db/seed.ts';
 import { startVariantA } from '../src/workflow/harness.ts';
 
@@ -126,6 +127,12 @@ try {
 }
 const fixture = generateFixture();
 const a = await startVariantA(config.databaseUrl, { clientTimeoutMs: ENV.client_timeout_ms });
+// Fail before writing anything if another run is using this database (§8.8 isolation).
+const releaseLock = await acquireRunLock(a.pool).catch(async (err) => {
+  await a.close();
+  await rm(dir, { recursive: true, force: true });
+  throw err;
+});
 const pg = (await a.pool.query<{ server_version: string }>('SHOW server_version')).rows[0]?.server_version;
 if (!pg) throw new Error('could not read the PostgreSQL version for the manifest');
 const sdkVersion = JSON.parse(await readFile(path.join(ROOT, 'node_modules/@anthropic-ai/sdk/package.json'), 'utf8')).version as string;
@@ -161,6 +168,9 @@ await writeFile(path.join(dir, 'manifest.json'), `${JSON.stringify(manifest, nul
 const eventsFile = path.join(dir, 'events.jsonl');
 await writeFile(eventsFile, '');
 let stopped: string | null = null;
+/** A run whose model API keeps failing is not measuring anything: stop it loudly. */
+const MAX_CONSECUTIVE_API_ERRORS = 5;
+let apiErrorsInARow = 0;
 try {
   let done = 0;
   outer: for (let rep = 1; rep <= k; rep++) {
@@ -179,11 +189,17 @@ try {
       }
       await appendFile(eventsFile, `${JSON.stringify(raw)}\n`);
       done++;
+      apiErrorsInARow = raw.harness_error?.startsWith('model API error') ? apiErrorsInARow + 1 : 0;
+      if (apiErrorsInARow >= MAX_CONSECUTIVE_API_ERRORS) {
+        stopped = `${apiErrorsInARow} consecutive model API errors (last: ${raw.harness_error}); run stopped as invalid infrastructure (§8.8)`;
+        break outer;
+      }
       if (done % 25 === 0) console.log(`${done}/${cases.length * k} case-runs${client?.meter ? ` · $${client.meter.spent.toFixed(4)} spent` : ''}`);
     }
   }
 } finally {
   await seed(a.pool, fixture);
+  await releaseLock();
   await a.close();
 }
 if (stopped || client?.meter) {

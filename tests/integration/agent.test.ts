@@ -12,6 +12,7 @@ import { SharedState, ToolLayer, type Request } from '../../src/agent/tools.ts';
 import { TraceRecorder } from '../../src/agent/trace.ts';
 import { seed } from '../../src/db/seed.ts';
 import { buildDataset } from '../../src/eval/dataset.ts';
+import { acquireRunLock } from '../../src/eval/run-lock.ts';
 import { runCaseOnAgent, systemBlocks } from '../../src/eval/run-agent.ts';
 import { runCaseOnVariantC } from '../../src/eval/run-variant-c.ts';
 import { scoreCaseRun } from '../../src/eval/score.ts';
@@ -180,6 +181,16 @@ describe('tool-use loop (ADR-0007)', () => {
     // A budget stop inside the loop halts the run rather than becoming an episode outcome.
     const broke: ModelClient = { model: 'x', paid: true, create: async () => { meter.assertCanCall(); throw new Error('unreachable'); } };
     await expect(runEpisode(broke, layer('B0').tl, spec())).rejects.toThrow(/budget stop/);
+  });
+});
+
+describe('run isolation (§8.8)', () => {
+  it('AG-10 only one evaluation run may hold a database at a time', async () => {
+    const release = await acquireRunLock(a.pool);
+    await expect(acquireRunLock(a.pool)).rejects.toThrow(/another evaluation run holds this database/);
+    await release();
+    const again = await acquireRunLock(a.pool);
+    await again();
   });
 });
 
