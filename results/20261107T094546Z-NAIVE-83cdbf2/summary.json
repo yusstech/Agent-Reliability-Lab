@@ -1,0 +1,238 @@
+{
+  "counts": {
+    "case_runs": 250,
+    "valid": 250,
+    "harness_errors": 0,
+    "cases": 50,
+    "k": 5
+  },
+  "claims": {
+    "completed": 190,
+    "not_changed": 60,
+    "needs_review": 0,
+    "pending": 0
+  },
+  "false_success": {
+    "count": 35,
+    "n": 250,
+    "rate": 0.14,
+    "wilson95": [
+      0.10241625705526929,
+      0.18847971875074165
+    ]
+  },
+  "false_failure": {
+    "count": 45,
+    "n": 250,
+    "rate": 0.18,
+    "wilson95": [
+      0.1373334320037719,
+      0.23235187982379335
+    ]
+  },
+  "false_claim": {
+    "count": 80,
+    "n": 250,
+    "rate": 0.32,
+    "wilson95": [
+      0.2652746583207053,
+      0.3801733295823002
+    ],
+    "bootstrap95_by_cases": [
+      0.2,
+      0.46
+    ]
+  },
+  "verified_completion": {
+    "count": 120,
+    "n": 150,
+    "rate": 0.8,
+    "wilson95": [
+      0.7288586685904683,
+      0.856159184558233
+    ]
+  },
+  "manual_review": {
+    "count": 0,
+    "n": 250,
+    "rate": 0,
+    "wilson95": [
+      8.673617379884035e-19,
+      0.015133299730570739
+    ]
+  },
+  "unfinished": {
+    "count": 0,
+    "n": 250,
+    "rate": 0,
+    "wilson95": [
+      8.673617379884035e-19,
+      0.015133299730570739
+    ]
+  },
+  "unauthorized_mutations": 30,
+  "duplicate_side_effects": 95,
+  "invariant_violations": {
+    "I1_I3": 15,
+    "I4": 30,
+    "I5": 250,
+    "I6": 95,
+    "I7": 5,
+    "I8": 250,
+    "I9": 190,
+    "I10": 0,
+    "I11": 75,
+    "I12": 80
+  },
+  "procedure_violations": {
+    "write_before_consent": 250,
+    "write_without_revalidation": 250,
+    "blind_retry_after_unknown": 0,
+    "claim_before_verification": 190
+  },
+  "correct": {
+    "count": 0,
+    "n": 250,
+    "rate": 0,
+    "wilson95": [
+      8.673617379884035e-19,
+      0.015133299730570739
+    ],
+    "bootstrap95_by_cases": [
+      0,
+      0
+    ]
+  },
+  "gated_success": {
+    "count": 0,
+    "n": 250,
+    "rate": 0,
+    "wilson95": [
+      8.673617379884035e-19,
+      0.015133299730570739
+    ]
+  },
+  "pass_hat_k": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0
+  },
+  "latency_ms": {
+    "n": 250,
+    "p50": 11,
+    "p95": 523.55,
+    "source": "ledger timestamps, QUEUED to terminal (§8.7); simulated environment"
+  },
+  "cost": {
+    "model_calls": 0,
+    "tokens": 0,
+    "note": "No model calls: scripted no-model control"
+  },
+  "by_category": {
+    "success": {
+      "case_runs": 50,
+      "correct": 0,
+      "claims": {
+        "completed": 50,
+        "not_changed": 0,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "unauthorized": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 15,
+        "not_changed": 15,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "ineligible": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 5,
+        "not_changed": 25,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "duplicate": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 30,
+        "not_changed": 0,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "timeout_before_write": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 30,
+        "not_changed": 0,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "timeout_after_write": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 30,
+        "not_changed": 0,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "partial": {
+      "case_runs": 30,
+      "correct": 0,
+      "claims": {
+        "completed": 10,
+        "not_changed": 20,
+        "needs_review": 0,
+        "pending": 0
+      }
+    },
+    "concurrent": {
+      "case_runs": 20,
+      "correct": 0,
+      "claims": {
+        "completed": 20,
+        "not_changed": 0,
+        "needs_review": 0,
+        "pending": 0
+      }
+    }
+  },
+  "agent": {
+    "models": [
+      "naive-v1"
+    ],
+    "primary_episode_outcomes": {
+      "reported": 250
+    },
+    "protocol_failures": 0,
+    "model_refusals": 0,
+    "model_calls": 0,
+    "scripted_turns": 870,
+    "tokens": {
+      "input": 0,
+      "cache_creation": 0,
+      "cache_read": 0,
+      "output": 0
+    },
+    "cache_read_share": null,
+    "usd": 0,
+    "usd_per_verified_completion": null,
+    "verified_completions": 155,
+    "price_source": "Anthropic API reference cached 2026-10-06 (ADR-0007)"
+  }
+}

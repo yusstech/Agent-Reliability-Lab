@@ -50,9 +50,9 @@ export function renderReport(manifest: Record<string, unknown>, s: Summary & { a
           `| Primary-episode outcomes | ${Object.entries(s.agent.primary_episode_outcomes).map(([k, v]) => `${k} ${v}`).join(' · ')} |`,
           `| Protocol failures (no report, turn cap, max_tokens) | ${s.agent.protocol_failures} |`,
           `| Model refusals | ${s.agent.model_refusals} |`,
-          `| Model calls | ${s.agent.model_calls} |`,
+          `| Model calls${s.agent.scripted_turns ? ' / scripted policy turns (no model)' : ''} | ${s.agent.model_calls}${s.agent.scripted_turns ? ` / ${s.agent.scripted_turns}` : ''} |`,
           `| Tokens in / cache write / cache read / out | ${s.agent.tokens.input} / ${s.agent.tokens.cache_creation} / ${s.agent.tokens.cache_read} / ${s.agent.tokens.output} |`,
-          `| Cost (list prices) | $${s.agent.usd.toFixed(4)}${s.agent.usd_per_verified_completion === null ? '' : `; $${s.agent.usd_per_verified_completion.toFixed(4)} per verified completion`} |`,
+          `| Cost (list prices) | ${s.agent.model_calls === 0 ? 'none: no model was called' : `$${s.agent.usd.toFixed(4)}${s.agent.usd_per_verified_completion === null ? '' : `; $${s.agent.usd_per_verified_completion.toFixed(4)} per verified completion`}`} |`,
           '',
         ]
       : []),

@@ -1,7 +1,7 @@
 // Scorer: derives every metric from raw case-run records, exactly as Evaluation Plan §8
 // defines them (as amended by EVALUATION_DEVIATIONS.md). Pure and deterministic.
 import type { TraceEvent } from '../agent/trace.ts';
-import { costUsd } from '../agent/pricing.ts';
+import { costUsd, PRICES } from '../agent/pricing.ts';
 import type { CustomerStatus } from '../workflow/customer-status.ts';
 import type { Category, Dataset, EvalCase } from './dataset.ts';
 import type { RawCaseRun } from './run-variant-a.ts';
@@ -300,12 +300,18 @@ export function agentSummary(raws: RawCaseRun[], scores: CaseRunScore[]) {
   }
   const tokens = { input: 0, cache_creation: 0, cache_read: 0, output: 0 };
   let calls = 0;
+  let scriptedTurns = 0;
   let usd = 0;
   const models = new Set<string>();
   for (const r of raws) {
     for (const e of r.episodes ?? []) {
       models.add(e.model);
       for (const t of e.turns) {
+        // Only a priced model makes model calls; a scripted control's turns are counted apart.
+        if (!(e.model in PRICES)) {
+          scriptedTurns++;
+          continue;
+        }
         calls++;
         tokens.input += t.usage.input_tokens;
         tokens.cache_creation += t.usage.cache_creation_input_tokens;
@@ -324,10 +330,11 @@ export function agentSummary(raws: RawCaseRun[], scores: CaseRunScore[]) {
     protocol_failures: protocolFailures,
     model_refusals: outcomes.model_refusal ?? 0,
     model_calls: calls,
+    scripted_turns: scriptedTurns,
     tokens,
     cache_read_share: promptTokens ? tokens.cache_read / promptTokens : null,
     usd: Math.round(usd * 1e6) / 1e6,
-    usd_per_verified_completion: verified ? Math.round((usd / verified) * 1e6) / 1e6 : null,
+    usd_per_verified_completion: calls && verified ? Math.round((usd / verified) * 1e6) / 1e6 : null,
     verified_completions: verified,
     price_source: 'Anthropic API reference cached 2026-10-06 (ADR-0007)',
   };

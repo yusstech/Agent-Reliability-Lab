@@ -119,6 +119,8 @@ describe('tool-trace detectors (deviation #2)', () => {
     const usage = { input_tokens: 1_000_000, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: 0 };
     r.episodes = [{ episode: 0, request_id: REQ, role: 'primary', model: 'claude-haiku-5-5', outcome: 'no_report', reported: null, message: null, error: null, turns: [{ turn: 1, stop_reason: 'end_turn', stop_details: null, usage, content: [], tool_results: [], ms: 1 }] }];
     const a = agentSummary([r], [scoreCaseRun(C, r)]);
-    expect(a).toMatchObject({ protocol_failures: 1, model_refusals: 0, model_calls: 1, usd: 0.1, verified_completions: 1 });
+    expect(a).toMatchObject({ protocol_failures: 1, model_refusals: 0, model_calls: 1, scripted_turns: 0, usd: 0.1, verified_completions: 1 });
+    r.episodes[0]!.model = 'naive-v1'; // a scripted control makes no model calls and costs nothing
+    expect(agentSummary([r], [scoreCaseRun(C, r)])).toMatchObject({ model_calls: 0, scripted_turns: 1, usd: 0, usd_per_verified_completion: null });
   });
 });
