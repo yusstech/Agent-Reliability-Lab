@@ -80,21 +80,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0301_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -106,6 +91,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0301_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -135,21 +135,6 @@
         },
         {
           "sequence": 9,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0301_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 10,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -161,6 +146,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0301_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -281,21 +281,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0302_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -307,6 +292,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -360,21 +360,6 @@
         },
         {
           "sequence": 11,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0302_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 12,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -386,6 +371,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -415,21 +415,6 @@
         },
         {
           "sequence": 15,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0302_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 16,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -441,6 +426,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 16,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0302_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -561,21 +561,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0303_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -587,6 +572,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -640,21 +640,6 @@
         },
         {
           "sequence": 11,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0303_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 12,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -666,6 +651,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 12,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0303_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -786,21 +786,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0304_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -812,6 +797,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -880,21 +880,6 @@
         },
         {
           "sequence": 12,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0304_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 13,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -906,6 +891,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 13,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0304_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -1026,21 +1026,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0305_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -1052,6 +1037,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -1081,21 +1081,6 @@
         },
         {
           "sequence": 9,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0305_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 10,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -1107,6 +1092,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0305_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -1135,6 +1135,20 @@
         },
         {
           "sequence": 13,
+          "step": "COMPENSATION_ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "version": 2,
+            "address_id": "addr_001"
+          }
+        },
+        {
+          "sequence": 14,
           "step": "ORDER_COMPENSATION_DISPATCHED",
           "from_status": null,
           "to_status": null,
@@ -1146,20 +1160,6 @@
             "key": "op_p0305_order_revert_v2",
             "provider": "order",
             "expected_version": 2
-          }
-        },
-        {
-          "sequence": 14,
-          "step": "COMPENSATION_ORDER_READ",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "PROVIDER_OK",
-          "result": "ok",
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "version": 2,
-            "address_id": "addr_001"
           }
         },
         {
@@ -1293,21 +1293,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0306_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -1319,6 +1304,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0306_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -1451,21 +1451,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0307_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -1477,6 +1462,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0307_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -1506,21 +1506,6 @@
         },
         {
           "sequence": 9,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0307_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 10,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -1532,6 +1517,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0307_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -1708,21 +1708,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0308_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -1734,6 +1719,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0308_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -1763,21 +1763,6 @@
         },
         {
           "sequence": 9,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0308_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 10,
           "step": "CARRIER_READ",
           "from_status": null,
           "to_status": null,
@@ -1789,6 +1774,21 @@
             "status": "AWAITING_PICKUP",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 10,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0308_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
           }
         },
         {
@@ -1909,21 +1909,6 @@
         },
         {
           "sequence": 5,
-          "step": "ORDER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0309_order_v1",
-            "provider": "order",
-            "expected_version": 1
-          }
-        },
-        {
-          "sequence": 6,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -1935,6 +1920,21 @@
             "status": "PACKING",
             "version": 1,
             "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
+          "step": "ORDER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0309_order_v1",
+            "provider": "order",
+            "expected_version": 1
           }
         },
         {
@@ -2232,6 +2232,21 @@
         },
         {
           "sequence": 5,
+          "step": "ORDER_READ",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "PROVIDER_OK",
+          "result": "ok",
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "status": "PACKING",
+            "version": 1,
+            "address_id": "addr_002"
+          }
+        },
+        {
+          "sequence": 6,
           "step": "ORDER_WRITE_DISPATCHED",
           "from_status": null,
           "to_status": null,
@@ -2246,7 +2261,7 @@
           }
         },
         {
-          "sequence": 6,
+          "sequence": 7,
           "step": "ORDER_READ",
           "from_status": null,
           "to_status": null,
@@ -2261,7 +2276,7 @@
           }
         },
         {
-          "sequence": 7,
+          "sequence": 8,
           "step": "TRANSITION",
           "from_status": "UPDATING_ORDER",
           "to_status": "UPDATING_CARRIER",
@@ -2270,21 +2285,6 @@
           "error_code": null,
           "provider_reference": null,
           "detail": null
-        },
-        {
-          "sequence": 8,
-          "step": "CARRIER_WRITE_DISPATCHED",
-          "from_status": null,
-          "to_status": null,
-          "reason_code": "WRITE_DISPATCHED",
-          "result": null,
-          "error_code": null,
-          "provider_reference": null,
-          "detail": {
-            "key": "op_p0310_carrier_v1",
-            "provider": "carrier",
-            "expected_version": 1
-          }
         },
         {
           "sequence": 9,
@@ -2303,6 +2303,21 @@
         },
         {
           "sequence": 10,
+          "step": "CARRIER_WRITE_DISPATCHED",
+          "from_status": null,
+          "to_status": null,
+          "reason_code": "WRITE_DISPATCHED",
+          "result": null,
+          "error_code": null,
+          "provider_reference": null,
+          "detail": {
+            "key": "op_p0310_carrier_v1",
+            "provider": "carrier",
+            "expected_version": 1
+          }
+        },
+        {
+          "sequence": 11,
           "step": "CARRIER_WRITE_RESULT",
           "from_status": null,
           "to_status": null,
@@ -2316,7 +2331,7 @@
           }
         },
         {
-          "sequence": 11,
+          "sequence": 12,
           "step": "TRANSITION",
           "from_status": "UPDATING_CARRIER",
           "to_status": "VERIFYING",
@@ -2327,7 +2342,7 @@
           "detail": null
         },
         {
-          "sequence": 12,
+          "sequence": 13,
           "step": "TRANSITION",
           "from_status": "VERIFYING",
           "to_status": "COMPLETED",

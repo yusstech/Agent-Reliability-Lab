@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "scripts", "fixtures", "scenarios", "tests", "vitest.config.ts"]
+  "include": ["src", "scripts", "fixtures", "scenarios", "datasets", "tests", "vitest.config.ts"]
 }

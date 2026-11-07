@@ -168,9 +168,16 @@ export class Worker {
     if (await this.crashAt?.(point, op)) throw new SimulatedCrash(point);
   }
 
-  /** Commits the write-ahead dispatch record while still holding the lease. */
-  private async logDispatch(op: OperationRow, token: string, step: string, detail: DispatchDetail & Record<string, unknown>): Promise<void> {
-    await fenced(this.pool, op.id, token, (client) => appendEvent(client, op.id, { step, reason_code: 'WRITE_DISPATCHED', detail }));
+  /**
+   * Commits the write-ahead dispatch record, preceded by the read it was based on, while
+   * still holding the lease. Logging them together keeps the event order equal to the
+   * order things happened (read, then dispatch, then result).
+   */
+  private async logDispatch(op: OperationRow, token: string, read: EventInput, step: string, detail: DispatchDetail & Record<string, unknown>): Promise<void> {
+    await fenced(this.pool, op.id, token, async (client) => {
+      await appendEvent(client, op.id, read);
+      await appendEvent(client, op.id, { step, reason_code: 'WRITE_DISPATCHED', detail });
+    });
     await this.crash('after_dispatch_logged', op);
   }
 
@@ -250,15 +257,15 @@ export class Worker {
 
     if (this.dispatches(events, 'order') >= this.maxWriteAttempts) return escalate('ORDER_WRITE_ATTEMPTS_EXHAUSTED', [seen]);
     const body = { address_id: op.target_address_id, idempotency_key: `${op.id}_order_v${order.version}`, expected_version: order.version };
-    await this.logDispatch(op, token, WRITE_DISPATCHED.order, { provider: 'order', key: body.idempotency_key, expected_version: body.expected_version });
+    await this.logDispatch(op, token, seen, WRITE_DISPATCHED.order, { provider: 'order', key: body.idempotency_key, expected_version: body.expected_version });
     const write = await this.providers.order.change(op.customer_id, op.order_id, body);
     await this.crash('after_provider_write', op);
 
     if (write.kind === 'ok') {
       const e = outcomeEvent('ORDER_WRITE_RESULT', write, { provider_reference: String(write.body.mutation.id), detail: { key: body.idempotency_key, replayed: write.replayed } });
-      return transition('UPDATING_CARRIER', 'ORDER_UPDATED', { events: [seen, e] });
+      return transition('UPDATING_CARRIER', 'ORDER_UPDATED', { events: [e] });
     }
-    const e = [seen, outcomeEvent('ORDER_WRITE_RESULT', write, { detail: { key: body.idempotency_key } })];
+    const e = [outcomeEvent('ORDER_WRITE_RESULT', write, { detail: { key: body.idempotency_key } })];
     if (write.kind === 'unknown') return transition('PENDING_RECONCILIATION', 'ORDER_WRITE_OUTCOME_UNKNOWN', { events: e });
     if (write.code === 'VERSION_CONFLICT') return retry('ORDER_VERSION_CONFLICT', e);
     return prior ? escalate('ORDER_REJECTED_AFTER_PRIOR_WRITE', e) : transition('REJECTED', 'ORDER_WRITE_REJECTED', { events: e });
@@ -284,15 +291,15 @@ export class Worker {
 
     if (this.dispatches(events, 'carrier') >= this.maxWriteAttempts) return escalate('CARRIER_WRITE_ATTEMPTS_EXHAUSTED', [seen]);
     const body = { address_id: op.target_address_id, idempotency_key: `${op.id}_carrier_v${shipment.version}`, expected_version: shipment.version };
-    await this.logDispatch(op, token, WRITE_DISPATCHED.carrier, { provider: 'carrier', key: body.idempotency_key, expected_version: body.expected_version });
+    await this.logDispatch(op, token, seen, WRITE_DISPATCHED.carrier, { provider: 'carrier', key: body.idempotency_key, expected_version: body.expected_version });
     const write = await this.providers.carrier.change(ref, body);
     await this.crash('after_provider_write', op);
 
     if (write.kind === 'ok') {
       const e = outcomeEvent('CARRIER_WRITE_RESULT', write, { provider_reference: String(write.body.mutation.id), detail: { key: body.idempotency_key, replayed: write.replayed } });
-      return transition('VERIFYING', 'CARRIER_UPDATED', { events: [seen, e] });
+      return transition('VERIFYING', 'CARRIER_UPDATED', { events: [e] });
     }
-    const e = [seen, outcomeEvent('CARRIER_WRITE_RESULT', write, { detail: { key: body.idempotency_key } })];
+    const e = [outcomeEvent('CARRIER_WRITE_RESULT', write, { detail: { key: body.idempotency_key } })];
     if (write.kind === 'unknown') return transition('PENDING_RECONCILIATION', 'CARRIER_WRITE_OUTCOME_UNKNOWN', { events: e });
     if (write.code === 'VERSION_CONFLICT') return retry('CARRIER_VERSION_CONFLICT', e);
     return prior ? escalate('CARRIER_REJECTED_AFTER_PRIOR_WRITE', e) : transition('COMPENSATING', 'CARRIER_WRITE_REJECTED', { events: e });
@@ -358,10 +365,10 @@ export class Worker {
     if (order.address_id !== op.target_address_id) return escalate('ORDER_CHANGED_DURING_COMPENSATION', [seen]);
 
     const body = { address_id: original, idempotency_key: `${op.id}_order_revert_v${order.version}`, expected_version: order.version };
-    await this.logDispatch(op, token, 'ORDER_COMPENSATION_DISPATCHED', { provider: 'order', key: body.idempotency_key, expected_version: body.expected_version });
+    await this.logDispatch(op, token, seen, 'ORDER_COMPENSATION_DISPATCHED', { provider: 'order', key: body.idempotency_key, expected_version: body.expected_version });
     const write = await this.providers.order.change(op.customer_id, op.order_id, body);
     await this.crash('after_provider_write', op);
-    const e = [seen, outcomeEvent('ORDER_COMPENSATION_RESULT', write, { detail: { key: body.idempotency_key } })];
+    const e = [outcomeEvent('ORDER_COMPENSATION_RESULT', write, { detail: { key: body.idempotency_key } })];
     if (write.kind === 'ok') return { kind: 'continue', reason: 'ORDER_REVERTED', events: e };
     // Unknown or conflicting: the next step re-reads the order and decides.
     if (write.kind === 'unknown' || write.code === 'VERSION_CONFLICT') return retry('COMPENSATION_WRITE_UNCONFIRMED', e);

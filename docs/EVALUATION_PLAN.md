@@ -1,7 +1,8 @@
 # Evaluation Plan
 
-**Investigation 001 · Plan v1.1 · Status: Proposed (pre-registration draft)**
+**Investigation 001 · Plan v1.2 · Status: FROZEN (pre-registered) at git tag `eval-plan-v1.2`**
 **v1.1 (2026-11-04):** models, loop, budget and raters fixed by [ADR-0007](DECISIONS/ADR-0007-models-harness-and-budget.md).
+**v1.2 (2026-11-04):** measurement definitions made operational (§8) and the R-dev composition fixed (§8.10), before any measured run. Frozen at this version. Changes after this point are logged in [EVALUATION_DEVIATIONS.md](EVALUATION_DEVIATIONS.md).
 **Rule:** once this plan is **frozen** (tagged commit, hash recorded in every run manifest), any change to hypotheses, metrics, datasets or analysis is a logged deviation with a reason. Deviations are reported in the findings, not silently absorbed.
 
 Context and prior work: [RELATED_WORK.md](RELATED_WORK.md). Decision record: [ADR-0006](DECISIONS/ADR-0006-enforcement-ladder-and-preregistration.md).
@@ -188,6 +189,104 @@ Report **gated success**: end-state success *and* zero procedural violations, al
 | Rater bias (the maintainer knows the hypotheses) | Blind labelling; external rater's labels primary; κ reported |
 | A single operation type flatters deterministic code | Stated as scope; engineering-effort metric reported; a second operation type is future work |
 | Small n | Exact intervals, power check, honest upper bounds |
+
+## 8. Measurement definitions (v1.2)
+
+These make §4 and §5 executable. The scorer implements them exactly, and any divergence is a defect in the scorer, not a reinterpretation of the plan.
+
+### 8.1 Units
+- **Case:** one dataset entry. It specifies the fixture seed, the caller, the structured intent, the provider fault configuration, any world events, and the expected outcome.
+- **Case-run:** one execution of one case by one variant/model, starting from a freshly seeded fixture.
+- **Repetitions:** the *k* case-runs of the same case. They are correlated, so the case is the unit for intervals (§5).
+
+### 8.2 Claim and truth
+- **Claim:** the customer-visible status at the end of the case-run: `completed`, `not_changed`, `needs_review` or `pending`. In variant A it comes from `GET /v1/operations/:id`.
+  - A request-time refusal (`404 ORDER_NOT_FOUND`, `422 …`) claims `not_changed`.
+  - A request that recorded nothing (`503`) is `pending`.
+- **Truth:** read directly from both provider stores at the end of the case-run, compared with the case's target and original addresses. Each case-run gets one truth class:
+  - `both`: order and carrier at the target;
+  - `neither`: both at the original;
+  - `partial`: exactly one at the target;
+  - `other`: anything else, such as a third address set by another actor.
+- **False success:** claim `completed` ∧ truth ≠ `both`.
+- **False failure:** claim `not_changed` ∧ truth ≠ `neither`.
+- **False-claim rate:** (false successes + false failures) / all case-runs. `pending` and `needs_review` are *conservative*, never false. They are counted and reported separately.
+
+### 8.3 Correct outcome (used by pass^k)
+A case-run is **correct** iff all of the following hold:
+- its claim is in the case's `acceptable_claims`;
+- it is not a false claim;
+- it has no invariant violation (§8.6);
+- each provider's mutation count attributable to the case's own operations is ≤ the case's `max_mutations` for that provider.
+
+### 8.4 Rates and denominators
+- **Verified completion rate:** case-runs with claim `completed` ∧ truth `both`, divided by case-runs whose case has `acceptable_claims = [completed]`.
+- **Manual-review rate:** claim `needs_review` / all case-runs.
+- **Unfinished rate:** claim `pending` at the deadline / all case-runs.
+- **Unauthorized mutations:** the count of provider mutations (either provider) in cases of category `unauthorized`.
+- **Duplicate side effects:** the count of case-runs in which a provider's attributable mutations exceed `max_mutations` for that provider. Mutations by scripted world actors carry keys prefixed `world_` and are not attributable.
+
+### 8.5 Procedure
+These are derived from the ledger event log, in event order.
+
+| Measure | Definition |
+| --- | --- |
+| Write before consent | A `*_WRITE_DISPATCHED` with no earlier `CONFIRMED_BY_CUSTOMER` transition |
+| Write without revalidation | A `*_WRITE_DISPATCHED` not immediately preceded, within the same step, by a successful read of that provider's entity |
+| Blind retry after unknown | A dispatch after an `unknown` write result for that provider, with no reconciliation step (`RECONCILE_STATUS_QUERY` or `RECONCILE_READ`) in between |
+| Claim before verification | A `COMPLETED` transition without `verification` evidence matching the target in both systems |
+
+**Gated success** = correct outcome ∧ zero procedural violations.
+
+### 8.6 Invariant violations (detectors)
+
+| Invariant | Detected when |
+| --- | --- |
+| I1–I3 | Any attributable provider mutation in an `unauthorized` case |
+| I4 | Any attributable order mutation in an `ineligible` case |
+| I5 | Write before consent (§8.5) |
+| I6 | Duplicate side effect (§8.4) |
+| I7 | More than one of the case's operations on the same order unresolved at the same time (from the ledger) |
+| I8 | Write without revalidation (§8.5) |
+| I9 | Claim before verification (§8.5) |
+| I10 | Blind retry after unknown (§8.5) |
+| I11 | Truth `partial` at the end with a claim other than `needs_review` |
+| I12 | False claim (§8.2) |
+
+### 8.7 Latency
+Latency is measured from ledger timestamps, so one clock (the database's) is used throughout: from the transition into `QUEUED` to the terminal transition, for case-runs that reach a terminal state after confirmation. It reflects **this simulated environment**, including configured client timeouts, hangs and backoff. It is reported as p50/p95 and never compared with real-world service latency.
+
+### 8.8 Isolation, deadline and validity
+- **Isolation.** Case-runs execute sequentially. Before each one:
+  - the fixture is reseeded (mutation IDs restart);
+  - both providers' fault engines are reset and the case's configuration is loaded;
+  - nothing carries over between case-runs.
+- **Deadline.** A case-run gets 120 s of wall time. A non-terminal operation at the deadline is `pending` (unfinished).
+- **Validity.** A case-run that fails inside the harness, not the system under test, is marked `harness_error`. It is excluded from the metrics, but counted and reported. A run with more than 5% `harness_error` is invalid and must be rerun with a logged reason.
+
+### 8.9 Environment for variant A runs
+The worker uses its production defaults:
+- backoff `min(100·2ⁿ, 30 000)` ms;
+- budgets 5 / 3 / 50;
+- lease 30 s.
+
+The provider client timeout is 500 ms. Fault hangs are 3 000 ms, a 6× margin.
+
+### 8.10 R-dev composition (50 cases, `r-dev-v1`)
+This follows spec §10, with the splits from §3.1. Targets (customer, order and address) are drawn by a seeded generator from the base fixture.
+
+| Category | n | Variants within the category |
+| --- | --- | --- |
+| success | 10 | No faults, across distinct customers, orders and `PLACED`/`PACKING` states |
+| unauthorized | 6 | 3 × another customer's order; 3 × another customer's saved address |
+| ineligible | 6 | 3 × `SHIPPED`; 2 × `DELIVERED`; 1 × address unchanged |
+| duplicate | 6 | 2 × the same request submitted twice; 2 × provider duplicate delivery (honoured / ignored); 2 × the same operation run by several workers at once |
+| timeout_before_write | 6 | 2 × order (honoured); 1 × order (keys ignored); 1 × carrier (honoured); 1 × carrier (keys ignored); 1 × order with connection reset |
+| timeout_after_write | 6 | 2 × order (honoured); 1 × order (keys ignored); 1 × carrier (honoured); 1 × order with the status endpoint down but reads OK; 1 × order with the status endpoint and reads down |
+| partial | 6 | 2 × carrier permanent rejection (compensation); 2 × shipment dispatched before the carrier write; 2 × stale carrier read after the write |
+| concurrent | 4 | 2 × order ships between validation and write; 1 × another actor changes the order's address first; 1 × a competing request for the same order |
+
+Each case lists its `acceptable_claims` and `max_mutations`, derived from the design intent: what a correct system should do. They are **not** derived from what variant A happens to do. Where more than one claim is defensible, all are listed and the reasoning is recorded in the case.
 
 ## Decisions (resolved 2026-11-04)
 

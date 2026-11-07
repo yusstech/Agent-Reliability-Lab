@@ -36,7 +36,7 @@ const SHIPMENT_STATUS_FOR: Record<OrderStatus, ShipmentStatus> = {
 };
 
 /** mulberry32: small, well-known deterministic PRNG. Not for security use. */
-function prng(seed: number): () => number {
+export function prng(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

@@ -1,0 +1,37 @@
+{
+  "run_id": "20261104T193231Z-A-7397818",
+  "created_at": "2026-11-04T19:32:31.252Z",
+  "variant": "A",
+  "model": null,
+  "k": 5,
+  "scope": "full",
+  "git": {
+    "commit": "7397818e7b1f5989e967fd6c58d311c75d3e4c80",
+    "branch": "phase-04-evaluation",
+    "dirty": false
+  },
+  "operator": "yusstech",
+  "dataset": {
+    "path": "datasets/r-dev-v1.json",
+    "version": "r-dev-v1",
+    "seed": 20261104,
+    "sha256": "848a59d7776895174db3e3d7142d5b49bbe3c335bf67232e6c24e644367a98fd",
+    "cases": 50
+  },
+  "plan": {
+    "path": "docs/EVALUATION_PLAN.md",
+    "sha256": "f5e0b3de55e50c288b4c68b2a69b6bbf7cf973a0ac76eac45e07189f86bc02cf",
+    "frozen_tag": "eval-plan-v1.2",
+    "frozen_sha256": "f5e0b3de55e50c288b4c68b2a69b6bbf7cf973a0ac76eac45e07189f86bc02cf",
+    "matches_frozen": true
+  },
+  "environment": {
+    "node": "v26.8.1",
+    "postgres": "16.14",
+    "os": "Darwin 25.6.0",
+    "arch": "arm64",
+    "client_timeout_ms": 500,
+    "deadline_ms": 120000,
+    "worker": "production defaults: backoff min(100*2^n, 30000) ms; budgets 5/3/50; lease 30 s"
+  }
+}
