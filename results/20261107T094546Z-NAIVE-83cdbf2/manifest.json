@@ -1,0 +1,64 @@
+{
+  "run_id": "20261107T094546Z-NAIVE-83cdbf2",
+  "created_at": "2026-11-07T09:45:46.503Z",
+  "variant": "NAIVE",
+  "model": null,
+  "k": 5,
+  "scope": "full",
+  "git": {
+    "commit": "83cdbf213e953fe063a855d07e0d3c22508101f3",
+    "branch": "HEAD",
+    "dirty": false
+  },
+  "operator": "yusstech",
+  "dataset": {
+    "path": "datasets/r-dev-v1.json",
+    "version": "r-dev-v1",
+    "seed": 20261104,
+    "sha256": "848a59d7776895174db3e3d7142d5b49bbe3c335bf67232e6c24e644367a98fd",
+    "cases": 50
+  },
+  "plan": {
+    "path": "docs/EVALUATION_PLAN.md",
+    "sha256": "f5e0b3de55e50c288b4c68b2a69b6bbf7cf973a0ac76eac45e07189f86bc02cf",
+    "frozen_tag": "eval-plan-v1.2",
+    "frozen_sha256": "f5e0b3de55e50c288b4c68b2a69b6bbf7cf973a0ac76eac45e07189f86bc02cf",
+    "matches_frozen": true
+  },
+  "environment": {
+    "node": "v26.8.1",
+    "postgres": "16.14",
+    "os": "Darwin 25.6.0",
+    "arch": "arm64",
+    "client_timeout_ms": 500,
+    "deadline_ms": 120000,
+    "worker": "production defaults: backoff min(100*2^n, 30000) ms; budgets 5/3/50; lease 30 s"
+  },
+  "record_version": 2,
+  "rung": "B0",
+  "enforcement": {
+    "I1": "code",
+    "I2": "code",
+    "I3": "prompt",
+    "I4": "prompt",
+    "I5": "prompt",
+    "I6": "prompt",
+    "I7": "prompt",
+    "I8": "prompt",
+    "I9": "prompt",
+    "I10": "prompt",
+    "I11": "prompt",
+    "I12": "prompt"
+  },
+  "prompts": {
+    "system_sha256": "d21e1b7c1760654c143741730f84ced5e7ff565f4cae07cfcfefc84928f73c1a",
+    "tools_sha256": "bce8315b1e17bb07409ce491022fe5c2b57e86a3101dcc60228f352571e3fc6c"
+  },
+  "loop": {
+    "policy": "scripted naive-v1 behind the same loop; no API calls",
+    "max_turns": 12
+  },
+  "episodes_planned": 295,
+  "budget_usd": 0,
+  "label": "NEGATIVE CONTROL: scripted, no model. It runs B0 tools through the same loop, runner and scorer to show the harness reports false claims when they happen. It is not evidence about agents."
+}

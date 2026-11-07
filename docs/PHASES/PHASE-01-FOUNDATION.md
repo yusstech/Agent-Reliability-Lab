@@ -88,7 +88,7 @@ npm test          # Test Files 8 passed (8) · Tests 50 passed (50)
 | No live data or external writes | All data synthetic; the only network target is local Postgres; API-09 confirms no ledger write | Pass |
 
 **Observed during the phase:** these are failures found and fixed, not hidden.
-1. Docker Desktop could not bind-mount an init script from the external exFAT volume (`mkdir /host_mnt/Volumes/exteralD: operation not permitted`). Fix: the test helper creates `arl_test` itself, so nothing is mounted.
+1. Docker Desktop could not bind-mount an init script from the external exFAT volume (`mkdir /host_mnt/Volumes/<volume>: operation not permitted`). Fix: the test helper creates `arl_test` itself, so nothing is mounted.
 2. Vitest collected macOS AppleDouble `._*.test.ts` files, which exFAT creates, and failed to parse them. Fix: excluded `**/._*`.
 3. API-08 initially failed: `text/plain` returned 400, not 415, because Fastify registers a default text parser. Fix: the parser is removed, so the API is JSON-only (ADR-0005).
 

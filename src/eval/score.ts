@@ -1,5 +1,7 @@
 // Scorer: derives every metric from raw case-run records, exactly as Evaluation Plan §8
 // defines them (as amended by EVALUATION_DEVIATIONS.md). Pure and deterministic.
+import type { TraceEvent } from '../agent/trace.ts';
+import { costUsd, PRICES } from '../agent/pricing.ts';
 import type { CustomerStatus } from '../workflow/customer-status.ts';
 import type { Category, Dataset, EvalCase } from './dataset.ts';
 import type { RawCaseRun } from './run-variant-a.ts';
@@ -60,7 +62,76 @@ function byOperation(events: Ev[]): Map<string, Ev[]> {
   return m;
 }
 
+/**
+ * §8.5 for B-family records (EVALUATION_DEVIATIONS #2). Same four measures, read from the
+ * trusted tool trace instead of a ledger:
+ *  - consent: a confirmed request_customer_confirmation for the request;
+ *  - revalidation: the episode's previous event on that provider is a successful read the
+ *    actor could act on (code's own guard read, or a model read from an earlier turn);
+ *  - reconciliation after an unknown write: a successful read, or a status query answered
+ *    applied / MUTATION_NOT_FOUND, on that provider in that episode;
+ *  - verification: an accepted `completed` report preceded, in the episode, by successful
+ *    reads of both systems showing the target, each newer than the episode's last write there.
+ */
+function toolProcedureViolations(r: RawCaseRun): Procedure[] {
+  const found = new Set<Procedure>();
+  const targets = new Map(r.operations.map((o) => [o.id, o.target_address_id]));
+  const consented = new Set<string>();
+  const last = new Map<string, TraceEvent>();
+  const unknown = new Map<string, boolean>();
+  const lastWriteSeq = new Map<string, number>();
+  const lastOkRead = new Map<string, TraceEvent>();
+  for (const e of [...(r.trace ?? [])].sort((a, b) => a.seq - b.seq)) {
+    if (e.actor === 'world') continue;
+    const k = `${e.episode}|${e.provider}`;
+    if (e.kind === 'consent' && e.result === 'confirmed') consented.add(e.request_id);
+    if (e.kind === 'write' && e.dispatched) {
+      if (!consented.has(e.request_id)) found.add('write_before_consent');
+      const prev = last.get(k);
+      if (!(prev && prev.kind === 'read' && prev.result === 'ok' && (prev.actor === 'code' || prev.turn < e.turn))) found.add('write_without_revalidation');
+      if (unknown.get(k)) found.add('blind_retry_after_unknown');
+      if (e.result === 'unknown') unknown.set(k, true);
+      lastWriteSeq.set(k, e.seq);
+    }
+    if (e.kind === 'read' && e.result === 'ok') {
+      unknown.set(k, false);
+      lastOkRead.set(k, e);
+    }
+    if (e.kind === 'status_query' && (e.result === 'ok' || e.code === 'MUTATION_NOT_FOUND')) unknown.set(k, false);
+    if (e.dispatched && (e.kind === 'read' || e.kind === 'write' || e.kind === 'status_query')) last.set(k, e);
+    if (e.kind === 'report' && e.result === 'accepted' && e.status === 'completed') {
+      const t = targets.get(e.request_id);
+      const fresh = (p: 'order' | 'carrier') => {
+        const rd = lastOkRead.get(`${e.episode}|${p}`);
+        return rd !== undefined && rd.entity?.address_id === t && rd.seq > (lastWriteSeq.get(`${e.episode}|${p}`) ?? -1);
+      };
+      if (!fresh('order') || !fresh('carrier')) found.add('claim_before_verification');
+    }
+  }
+  return [...found].sort();
+}
+
+/**
+ * I7 for B-family records: a request is unresolved from its receipt until its accepted
+ * report. As in variant A, where a refused request never becomes an operation, a request
+ * counts only if it held a change: a confirmed consent or a dispatched write.
+ */
+function toolOverlappingUnresolved(r: RawCaseRun): boolean {
+  const spans = new Map<string, { order: string; start: number; end: number; held: boolean }>();
+  for (const e of [...(r.trace ?? [])].sort((a, b) => a.seq - b.seq)) {
+    if (e.actor === 'world') continue;
+    let s = spans.get(e.request_id);
+    if (!s && e.kind === 'received' && e.order_id) spans.set(e.request_id, (s = { order: e.order_id, start: e.seq, end: Number.POSITIVE_INFINITY, held: false }));
+    if (!s) continue;
+    if ((e.kind === 'consent' && e.result === 'confirmed') || (e.kind === 'write' && e.dispatched)) s.held = true;
+    if (e.kind === 'report' && e.result === 'accepted' && s.end === Number.POSITIVE_INFINITY) s.end = e.seq;
+  }
+  const xs = [...spans.values()].filter((s) => s.held);
+  return xs.some((a, i) => xs.some((b, j) => i < j && a.order === b.order && a.start < b.end && b.start < a.end));
+}
+
 function procedureViolations(r: RawCaseRun): Procedure[] {
+  if (r.trace) return toolProcedureViolations(r);
   const found = new Set<Procedure>();
   const targets = new Map(r.operations.map((o) => [o.id, o.target_address_id]));
   for (const [opId, evs] of byOperation(r.events)) {
@@ -91,6 +162,7 @@ function procedureViolations(r: RawCaseRun): Procedure[] {
 
 /** I7: two of the run's operations on one order unresolved at overlapping times. */
 function overlappingUnresolved(r: RawCaseRun): boolean {
+  if (r.trace) return toolOverlappingUnresolved(r);
   const intervals: { order: string; start: number; end: number }[] = [];
   const orderOf = new Map(r.operations.map((o) => [o.id, o.order_id]));
   for (const [opId, evs] of byOperation(r.events)) {
@@ -130,7 +202,13 @@ export function scoreCaseRun(c: EvalCase, r: RawCaseRun): CaseRunScore {
   const primary = r.events.filter((e) => e.operation_id === r.primary_operation_id);
   const queued = primary.find((e) => e.to_status === 'QUEUED');
   const done = primary.find((e) => e.to_status && TERMINAL.has(e.to_status) && e.from_status !== 'RECEIVED');
-  const latency_ms = queued && done ? Date.parse(done.created_at) - Date.parse(queued.created_at) : null;
+  let latency_ms = queued && done ? Date.parse(done.created_at) - Date.parse(queued.created_at) : null;
+  if (r.trace) {
+    // B family: first traced action of the primary episode to its accepted report (deviation #2).
+    const ep0 = r.trace.filter((e) => e.request_id === r.primary_operation_id && e.episode === Math.min(...r.trace!.filter((x) => x.request_id === r.primary_operation_id).map((x) => x.episode)));
+    const end = ep0.find((e) => e.kind === 'report' && e.result === 'accepted');
+    latency_ms = ep0[0] && end ? Date.parse(end.at) - Date.parse(ep0[0].at) : null;
+  }
   const refusal = r.responses.find((x) => x.action === 'submit')?.code ?? null;
 
   return {
@@ -207,3 +285,58 @@ export function summarize(dataset: Dataset, scores: CaseRunScore[], { bootstrapS
   };
 }
 export type Summary = ReturnType<typeof summarize>;
+
+/**
+ * Model-variant protocol and cost summary (Plan §4.1, §4.5; ADR-0007). Only present for
+ * record-version-2 runs, so variant A's derived files are unchanged.
+ */
+export function agentSummary(raws: RawCaseRun[], scores: CaseRunScore[]) {
+  const valid = raws.filter((r) => r.harness_error === null);
+  const primaryOf = (r: RawCaseRun) => (r.episodes ?? []).filter((e) => e.role === 'primary').sort((a, b) => a.episode - b.episode)[0];
+  const outcomes: Record<string, number> = {};
+  for (const r of valid) {
+    const o = primaryOf(r)?.outcome ?? 'missing';
+    outcomes[o] = (outcomes[o] ?? 0) + 1;
+  }
+  const tokens = { input: 0, cache_creation: 0, cache_read: 0, output: 0 };
+  let calls = 0;
+  let scriptedTurns = 0;
+  let usd = 0;
+  const models = new Set<string>();
+  for (const r of raws) {
+    for (const e of r.episodes ?? []) {
+      models.add(e.model);
+      for (const t of e.turns) {
+        // Only a priced model makes model calls; a scripted control's turns are counted apart.
+        if (!(e.model in PRICES)) {
+          scriptedTurns++;
+          continue;
+        }
+        calls++;
+        tokens.input += t.usage.input_tokens;
+        tokens.cache_creation += t.usage.cache_creation_input_tokens;
+        tokens.cache_read += t.usage.cache_read_input_tokens;
+        tokens.output += t.usage.output_tokens;
+        usd += costUsd(e.model, t.usage);
+      }
+    }
+  }
+  const verified = scores.filter((s) => !s.harness_error && s.claim === 'completed' && s.truth === 'both').length;
+  const promptTokens = tokens.input + tokens.cache_creation + tokens.cache_read;
+  const protocolFailures = (outcomes.no_report ?? 0) + (outcomes.turn_cap ?? 0) + (outcomes.max_tokens ?? 0);
+  return {
+    models: [...models].sort(),
+    primary_episode_outcomes: Object.fromEntries(Object.entries(outcomes).sort()),
+    protocol_failures: protocolFailures,
+    model_refusals: outcomes.model_refusal ?? 0,
+    model_calls: calls,
+    scripted_turns: scriptedTurns,
+    tokens,
+    cache_read_share: promptTokens ? tokens.cache_read / promptTokens : null,
+    usd: Math.round(usd * 1e6) / 1e6,
+    usd_per_verified_completion: calls && verified ? Math.round((usd / verified) * 1e6) / 1e6 : null,
+    verified_completions: verified,
+    price_source: 'Anthropic API reference cached 2026-10-06 (ADR-0007)',
+  };
+}
+export type AgentSummary = ReturnType<typeof agentSummary>;
