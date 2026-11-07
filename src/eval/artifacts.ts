@@ -5,7 +5,7 @@ import path from 'node:path';
 import type { Dataset } from './dataset.ts';
 import { renderReport } from './report.ts';
 import type { RawCaseRun } from './run-variant-a.ts';
-import { type CaseRunScore, scoreCaseRun, summarize } from './score.ts';
+import { agentSummary, type CaseRunScore, scoreCaseRun, summarize } from './score.ts';
 
 export async function readRaw(dir: string): Promise<RawCaseRun[]> {
   const text = await readFile(path.join(dir, 'events.jsonl'), 'utf8');
@@ -29,7 +29,12 @@ export async function scoreRun(dir: string, dataset: Dataset) {
     if (!c) throw new Error(`raw record for unknown case ${r.case_id}`);
     return scoreCaseRun(c, r);
   });
-  const summary = summarize(dataset, scores);
+  const base = summarize(dataset, scores);
+  // Model-variant records (schema v2) add protocol and cost; variant A's summary is unchanged.
+  const agent = raw.some((r) => r.record_version === 2) ? agentSummary(raw, scores) : undefined;
+  const summary = agent
+    ? { ...base, cost: { model_calls: agent.model_calls, tokens: agent.tokens.input + agent.tokens.cache_creation + agent.tokens.cache_read + agent.tokens.output, note: agent.model_calls ? `$${agent.usd.toFixed(4)} at list prices (${agent.price_source})` : 'No model calls: scripted no-model control' }, agent }
+    : base;
   await writeFile(path.join(dir, 'cases.csv'), `${[CSV_COLUMNS.join(','), ...scores.map((s) => CSV_COLUMNS.map((k) => csvCell(s[k])).join(','))].join('\n')}\n`);
   await writeFile(path.join(dir, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
   await writeFile(path.join(dir, 'report.md'), renderReport(manifest, summary));

@@ -4,12 +4,15 @@ import type { Fixture } from '../../fixtures/generate.ts';
 import { seed } from '../db/seed.ts';
 import type { CustomerStatus } from '../workflow/customer-status.ts';
 import type { VariantA } from '../workflow/harness.ts';
+import type { EpisodeLog } from '../agent/loop.ts';
+import type { TraceEvent } from '../agent/trace.ts';
 import type { EvalCase } from './dataset.ts';
 
 export interface RawCaseRun {
   case_id: string;
   rep: number;
-  variant: 'A';
+  /** A, C, NAIVE, B0…B3. */
+  variant: string;
   started_at: string;
   finished_at: string;
   harness_error: string | null;
@@ -26,6 +29,44 @@ export interface RawCaseRun {
     order_mutations: { id: number; idempotency_key: string | null; from_address_id: string; to_address_id: string }[];
     carrier_mutations: { id: number; idempotency_key: string | null; from_address_id: string; to_address_id: string }[];
   };
+  /** Record schema v2 (ADR-0011): present only on model-directed and control records. */
+  record_version?: 2;
+  model?: string;
+  /** Tool trace written by trusted tool code (B family). Procedure detectors read this instead of `events`. */
+  trace?: TraceEvent[];
+  episodes?: EpisodeLog[];
+  /** Variant C: the action selector's call and proposal. */
+  selector?: unknown;
+}
+
+type Observed = Pick<RawCaseRun, 'operations' | 'events' | 'providers'>;
+
+/** Reads the ledger and both provider stores directly (§8.2). Never trusts any response. */
+export async function observeStores(pool: VariantA['pool'], c: EvalCase): Promise<Observed> {
+  const q = async <T>(sql: string, params: unknown[] = []) => (await pool.query(sql, params)).rows as T[];
+  const operations = await q<RawCaseRun['operations'][number]>('SELECT id, order_id, target_address_id, status, public_reason FROM ledger.operations ORDER BY created_at, id');
+  const events = (
+    await q<RawCaseRun['events'][number] & { created_at: Date }>(
+      'SELECT operation_id, sequence, step, from_status, to_status, reason_code, result, error_code, detail, created_at FROM ledger.operation_events ORDER BY created_at, operation_id, sequence',
+    )
+  ).map((e) => ({ ...e, created_at: new Date(e.created_at).toISOString() }));
+  const [order] = await q<{ address_id: string; version: number; status: string }>('SELECT address_id, version, status FROM order_svc.orders WHERE id = $1', [c.intent.order_id]);
+  const [shipment] = await q<{ address_id: string; version: number; status: string }>('SELECT address_id, version, status FROM carrier_svc.shipments WHERE carrier_ref = $1', [c.carrier_ref]);
+  const muts = (table: string) => q<RawCaseRun['providers']['order_mutations'][number]>(`SELECT id::int AS id, idempotency_key, from_address_id, to_address_id FROM ${table} ORDER BY id`);
+  return { operations, events, providers: { order: order ?? null, shipment: shipment ?? null, order_mutations: await muts('order_svc.address_mutations'), carrier_mutations: await muts('carrier_svc.address_mutations') } };
+}
+
+/** Reseeds the fixture and loads the case's provider faults (§8.8 isolation). */
+export async function prepareCase(a: VariantA, fixture: Fixture, c: EvalCase): Promise<void> {
+  await seed(a.pool, fixture);
+  for (const p of ['order', 'carrier'] as const) {
+    const r = await a.admin[p].request('PUT', '/_dev/scenario', { scenario_id: c.id, ...(c.faults[p] ?? {}) });
+    if (r.kind !== 'ok') throw new Error(`could not load ${p} faults`);
+  }
+}
+
+export async function clearFaults(a: VariantA): Promise<void> {
+  for (const p of ['order', 'carrier'] as const) await a.admin[p].request('DELETE', '/_dev/scenario');
 }
 
 export interface RunOptions {
@@ -37,7 +78,7 @@ export interface RunOptions {
 const auth = (c: string) => ({ authorization: `Bearer mock_session_${c}` });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCase, rep: number, opts: RunOptions): Promise<RawCaseRun> {
+export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCase, rep: number, opts: RunOptions, variant = 'A'): Promise<RawCaseRun> {
   const started = new Date();
   const responses: RawCaseRun['responses'] = [];
   let primary: string | null = null;
@@ -47,11 +88,7 @@ export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCa
   let deadlineHit = false;
 
   try {
-    await seed(a.pool, fixture);
-    for (const p of ['order', 'carrier'] as const) {
-      const r = await a.admin[p].request('PUT', '/_dev/scenario', { scenario_id: c.id, ...(c.faults[p] ?? {}) });
-      if (r.kind !== 'ok') throw new Error(`could not load ${p} faults`);
-    }
+    await prepareCase(a, fixture, c);
     const key = `${c.id}_r${rep}_request`;
     const submit = async (action: string, body: Record<string, unknown>) => {
       const res = await a.app.inject({ method: 'POST', url: '/v1/address-change-requests', headers: auth(c.caller), payload: body });
@@ -102,16 +139,7 @@ export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCa
   }
 
   // Observe. Everything below is read straight from the stores, never from responses.
-  const q = async <T>(sql: string, params: unknown[] = []) => (await a.pool.query(sql, params)).rows as T[];
-  const operations = await q<RawCaseRun['operations'][number]>('SELECT id, order_id, target_address_id, status, public_reason FROM ledger.operations ORDER BY created_at, id');
-  const events = (
-    await q<RawCaseRun['events'][number] & { created_at: Date }>(
-      'SELECT operation_id, sequence, step, from_status, to_status, reason_code, result, error_code, detail, created_at FROM ledger.operation_events ORDER BY created_at, operation_id, sequence',
-    )
-  ).map((e) => ({ ...e, created_at: new Date(e.created_at).toISOString() }));
-  const [order] = await q<{ address_id: string; version: number; status: string }>('SELECT address_id, version, status FROM order_svc.orders WHERE id = $1', [c.intent.order_id]);
-  const [shipment] = await q<{ address_id: string; version: number; status: string }>('SELECT address_id, version, status FROM carrier_svc.shipments WHERE carrier_ref = $1', [c.carrier_ref]);
-  const muts = (table: string) => q<RawCaseRun['providers']['order_mutations'][number]>(`SELECT id::int AS id, idempotency_key, from_address_id, to_address_id FROM ${table} ORDER BY id`);
+  const observed = await observeStores(a.pool, c);
 
   // The claim is what the customer is told, read through the customer-facing API (§8.2).
   let claim: CustomerStatus = 'pending';
@@ -121,11 +149,11 @@ export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCa
     if (view.statusCode === 200) claim = (view.json() as { customer_status: CustomerStatus }).customer_status;
   }
 
-  for (const p of ['order', 'carrier'] as const) await a.admin[p].request('DELETE', '/_dev/scenario');
+  await clearFaults(a);
   return {
     case_id: c.id,
     rep,
-    variant: 'A',
+    variant,
     started_at: started.toISOString(),
     finished_at: new Date().toISOString(),
     harness_error: harnessError,
@@ -133,8 +161,6 @@ export async function runCaseOnVariantA(a: VariantA, fixture: Fixture, c: EvalCa
     responses,
     primary_operation_id: primary,
     claim,
-    operations,
-    events,
-    providers: { order: order ?? null, shipment: shipment ?? null, order_mutations: await muts('order_svc.address_mutations'), carrier_mutations: await muts('carrier_svc.address_mutations') },
+    ...observed,
   };
 }
