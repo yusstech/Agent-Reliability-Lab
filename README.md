@@ -4,7 +4,7 @@
 
 Part of *The Product Systems Notebook*, **Investigation 001: The Agent Said "Done." The Order Wasn't Updated.**
 
-> **Status: Phases 01–03 have passed their gates; Phase 04 (evaluation harness) is tested** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md), [04](docs/PHASES/PHASE-04-EVALUATION.md)). The Evaluation Plan is **frozen** (tag `eval-plan-v1.2`). The first measured result is a *development-set* baseline for variant A (below). There is **no** model integration and no confirmatory result yet. 145 automated tests pass from a clean database.
+> **Status: Phases 01–04 have passed their gates, through the evaluation harness** ([01](docs/PHASES/PHASE-01-FOUNDATION.md), [02](docs/PHASES/PHASE-02-MOCK-SERVICES.md), [03](docs/PHASES/PHASE-03-DETERMINISTIC.md), [04](docs/PHASES/PHASE-04-EVALUATION.md)). The Evaluation Plan is **frozen** (tag `eval-plan-v1.2`). The first measured result is a *development-set* baseline for variant A (below). There is **no** model integration and no confirmatory result yet. 145 automated tests pass from a clean database.
 
 ## The question
 

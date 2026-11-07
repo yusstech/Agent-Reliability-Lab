@@ -1,8 +1,8 @@
 # Phase 04: Reliability Evaluation Harness
 
-- **Status:** Tested. All done-when criteria pass. The gate is signed off when this branch is merged and the commit is recorded below.
-- **Dates:** 2026-11-04 → 2026-11-04
-- **Commit at gate:** not yet merged (branch `phase-04-evaluation`)
+- **Status:** **Passed** (2026-11-07)
+- **Dates:** 2026-11-04 → 2026-11-07
+- **Commit at gate:** `6e2d862` (merge of [PR #3](https://github.com/yusstech/Agent-Reliability-Lab/pull/3)). The merged `main` was re-verified: 20 files and 145 tests pass from an empty database; both committed runs re-score with zero changed files; and the freeze commit `57de113` is in `main`'s history. *This PR was merged without a separate code-review pass, at the maintainer's direction (unlike Phases 02–03).*
 
 ## 1. Goal / research value
 Turn the implementation into a **falsifiable, repeatable experiment**. Every number must be regenerable from raw events, and the definitions must be fixed in public before anything is measured. That way, variants B and C (Phase 05) are scored by exactly the same rules, and neither can be favoured after the fact.
@@ -114,6 +114,6 @@ Status label: **Observed** on the development set. This is not the confirmatory 
 - **Dataset variety is modest.** It covers 19 distinct orders and 8 callers. The foreign address in the unauthorized-address cases is always the first non-owned address (`addr_001`).
 
 ## 8. Outcome / next decision
-All done-when criteria pass. The harness reproduces itself, and the baseline is recorded with an honest reading. **Next, Phase 05:** variants B0–B3 and C. They use the same dataset, scorer and definitions; Claude Haiku 5.5 is primary, with a cost pilot first ([ADR-0007](../DECISIONS/ADR-0007-models-harness-and-budget.md)). Then the language set, the freeze of every variant, the generation of R-conf and R-hold, and the confirmatory run.
+All done-when criteria pass, and the gate is **signed off as Passed** at `6e2d862`. The harness reproduces itself, and the baseline is recorded with an honest reading. **Next, Phase 05:** variants B0–B3 and C. They use the same dataset, scorer and definitions; Claude Haiku 5.5 is primary, with a cost pilot first ([ADR-0007](../DECISIONS/ADR-0007-models-harness-and-budget.md)). Then the language set, the freeze of every variant, the generation of R-conf and R-hold, and the confirmatory run.
 
 **What changed in our thinking:** defining procedure metrics precisely surfaced a real fidelity bug in A's own logs (finding 1). The same discipline will matter more for model variants, whose traces are less structured. Their records must make "what happened, in what order" just as unambiguous, or the procedure metrics won't be comparable.
