@@ -86,7 +86,7 @@ These were written from the policy code ([naive.ts](../../src/agent/naive.ts)), 
 ### NAIVE negative control: observed ([run report](../../results/20261107T094546Z-NAIVE-83cdbf2/report.md))
 Status label: **Observed.** This is a harness check on R-dev, not a result about agents.
 
-The run is `20261107T094546Z-NAIVE-83cdbf2`: 250 case-runs, 0 harness errors, clean tree at `83cdbf2`, where the predictions above were already committed. It ran from a separate worktree so that uncommitted edits elsewhere in the repository could not mark the manifest dirty.
+The run is `20261107T094546Z-NAIVE-83cdbf2`: 250 case-runs, 0 harness errors, clean tree at `83cdbf2`, where the predictions above were already committed. It ran from a separate, detached worktree so that uncommitted edits elsewhere in the repository could not mark the manifest dirty. As a result, the manifest's `branch` field reads `HEAD`; the recorded commit is the authoritative reference.
 
 | Check | Result |
 | --- | --- |
